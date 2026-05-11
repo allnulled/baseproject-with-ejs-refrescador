@@ -18,5 +18,5 @@ refrescador \
     -e "css" \
     -e "html" \
     -x 'node build.js @{refrescador.file}' \
-    -s "test-browser" \
+    -s "test/browser" \
     -up "moduler-v3"

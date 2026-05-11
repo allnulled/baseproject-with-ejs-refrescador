@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "bash dev.sh",
     "build": "node build.js",
-    "test": "node test-nodejs/test.js"
+    "test": "node test/nodejs/test.js"
   },
   "keywords": [],
   "author": "allnulled",
