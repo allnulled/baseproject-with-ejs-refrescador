@@ -217,12 +217,12 @@
                 out += "\n";
             }
             if (asText) {
-                return out.trim();
+                return out;
             }
             console.log(this.constructor.colors.box(out.trim()));
         };
         static colors = Colors;
-        static reportCollection = function(testResults) {
+        static reportCollection = function(testResults, totalMs) {
             Iterating_collections: for (let index = 0; index < testResults.length; index++) {
                 const testInfo = testResults[index];
                 const {
@@ -239,16 +239,17 @@
                             ms
                         } = test;
                         cols.push([
-                            SpeedObserver.colors.style("italic,white").text(` ⏳ ${ms} ms `),
-                            status,
-                            SpeedObserver.colors.style("italic,magenta").text(op),
+                            SpeedObserver.colors.style("bold,white").text(` ⏳ ${ms}ms `),
+                            SpeedObserver.colors.style(status === "ok" ? "greenBright" : "underline,redBright").text(status),
+                            SpeedObserver.colors.style(status === "ok" ? "italic,greenBright" : "underline,italic,bold,red").text(op),
+                            SpeedObserver.colors.style("magenta,underline").text(((ms / totalMs) * 100).toFixed(2) + "% of " + totalMs + "ms"),
                         ]);
                     }
                 console.log(SpeedObserver.colors.table([
                     // ["Time", "Status", "File"]
                 ].concat(cols), {
                     head: [{
-                        colSpan: 3,
+                        colSpan: 4,
                         content: title
                     }],
                     style: {

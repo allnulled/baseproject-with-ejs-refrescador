@@ -24,9 +24,9 @@
     }
     return isSelected;
   };
-  let globalStatus = "pending";
   const evaluarDirectorio = async function (settingsDir, crono1) {
     crono1.start();
+    const initDir = new Date();
     const dir = path.resolve(__dirname, settingsDir);
     const dirName = dir.replace(__dirname + "/", "");
     if (!matchesTestRules(dir)) {
@@ -55,9 +55,9 @@
         const testCallback = require(file);
         await testCallback({ ModulerV3, SpeedObserver }, parameters);
         console.log(Colors.style("cyan").text(` ✅ Success: `) + `«${filepath}»`);
-        status = Colors.style("greenBright").text("ok");
+        status = "ok";
       } catch (error) {
-        status = Colors.style("bold,redBright").text("failed");
+        status = "failed";
         console.log(Colors.style("red").text(` ⛔️ Failure: `) + `«${filepath}»`);
         errors.push({ error, testId: file, testPath: filepath });
       } finally {
@@ -65,10 +65,10 @@
       }
     }
     if (errors.length) {
-      localStatus = Colors.style("bold,redBright").text("failed");
+      localStatus = "failed";
       let errorMessage = "";
       errorMessage += Colors.style("red,bold").text(`❌ Tests failed with «${errors.length}» errors:`);
-      for (let index = errors.length - 1; index >= 0; index--) {
+      for (let index = 0; index < errors.length; index++) {
         const errorInfo = errors[index];
         const { error, testPath } = errorInfo;
         errorMessage += `\n  ${index + 1}. ❌ Error in test of:\n    - ${testPath}\n`;
@@ -77,19 +77,22 @@
       }
       console.log(Colors.table([[errorMessage]], { style: { border: ["red"] } }));
     } else {
-      localStatus = Colors.style("greenBright").text("ok");
+      localStatus = "ok";
       console.log(Colors.style("cyan,bold").text(` 🟢 Collection tests of «${dirName}» passed successfully.`));
     }
     crono1.save(`Test collection of «${settingsDir}»`, { status: localStatus });
-    return { cronoFiles };
+    const total = (new Date()).getTime() - initDir.getTime();
+    return { cronoFiles, total };
   };
   const crono1 = SpeedObserver.create();
   const cronos = [];
+  let initAll = new Date();
   for (let index = 0; index < settings.testDirs.length; index++) {
     const testDir = settings.testDirs[index];
-    const { cronoFiles } = await evaluarDirectorio(testDir, crono1);
-    if (cronoFiles) cronos.push({ dir: testDir, crono: cronoFiles });
+    const { cronoFiles, total } = await evaluarDirectorio(testDir, crono1);
+    if (cronoFiles) cronos.push({ dir: testDir, crono: cronoFiles, total });
   }
+  const durationAll = (new Date()).getTime() - initAll.getTime();
   if (settings.showMetrics) {
     SpeedObserver.reportCollection([{
       title: "All collections",
@@ -99,6 +102,6 @@
         title: `Test collection of «${o.dir}»`,
         tests: o.crono.records,
       };
-    })));
+    })), durationAll);
   }
 })();
