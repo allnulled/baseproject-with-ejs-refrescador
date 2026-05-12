@@ -11,6 +11,8 @@
   }
 })(function () {
 
+  <%-await inc("dist/colors.dist.js")%>
+
   const SpeedObserver = class SpeedObserver {
     static create = <%-await inc("src/SpeedObserver/SpeedObserver.create.js")%>;
     <%-await inc("src/SpeedObserver/SpeedObserver.constructor.js")%>
@@ -19,7 +21,8 @@
     print = <%-await inc("src/SpeedObserver/SpeedObserver.prototype.print.js")%>;
     save = <%-await inc("src/SpeedObserver/SpeedObserver.prototype.save.js")%>;
     report = <%-await inc("src/SpeedObserver/SpeedObserver.prototype.report.js")%>;
-    static colors = <%-await inc("src/SpeedObserver/SpeedObserver.colors.js")%>;
+    static colors = Colors;
+    static reportCollection = <%-await inc("src/SpeedObserver/SpeedObserver.reportCollection.js")%>;
   };
 
   return SpeedObserver;

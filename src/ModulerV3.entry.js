@@ -15,9 +15,9 @@
     static create = <%-await inc("src/ModulerV3/ModulerV3.create.js")%>;
     <%-await inc("src/ModulerV3/ModulerV3.constructor.js")%>
     assert = <%-await inc("src/ModulerV3/ModulerV3.prototype.assert.js")%>;
-    require = <%-await inc("src/ModulerV3/ModulerV3.prototype.require.js")%>;
     define = <%-await inc("src/ModulerV3/ModulerV3.prototype.define.js")%>;
-    validateDefineOptions = <%-await inc("src/ModulerV3/ModulerV3.prototype.validateDefineOptions.js")%>;
+    mean = <%-await inc("src/ModulerV3/ModulerV3.prototype.mean.js")%>;
+    _validateDefineOptions = <%-await inc("src/ModulerV3/ModulerV3.prototype._validateDefineOptions.js")%>;
   };
 
   return ModulerV3;

@@ -12,6 +12,7 @@
   "license": "WTFPL",
   "description": "",
   "devDependencies": {
+    "cli-table3": "^0.6.5",
     "ejs": "^5.0.2",
     "js-beautify": "^1.15.4"
   }

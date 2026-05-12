@@ -11,86 +11,20 @@
     }
 })(function() {
 
-    const SpeedObserver = class SpeedObserver {
-        static create = function(...args) {
-            return new this(...args);
-        };
-        constructor() {
-            this.startedAt = new Date();
-            this.records = [];
+    (function(factory) {
+        const mod = factory();
+        if (typeof window !== 'undefined') {
+            window['Colors'] = mod;
         }
-        start = function() {
-            this.startedAt = new Date();
-        };
-        stop = function() {
-            return (new Date()).getTime() - this.startedAt.getTime();
-        };
-        print = function(op = "Operation", ms = false, msg = '  [*] Operation «{op}» took: {ms} milliseconds') {
-            const time = typeof ms === "number" ? ms : this.stop();
-            const out = msg.replace("{op}", op).replace("{ms}", time);
-            console.log(out);
-        };
-        save = function(op) {
-            this.records.push({
-                op: op,
-                ms: this.stop(),
-            });
-        };
-        report = function() {
-            const minPad = 13;
-            const minStyle = "underline,bold,greenBright";
-            const minStyleName = "greenBright";
-            const maxStyle = "underline,bold,redBright";
-            const maxStyleName = "redBright";
-            let max = 0;
-            let min = Infinity;
-            let maxOpLength = 0;
-            for (let index = 0; index < this.records.length; index++) {
-                const {
-                    op,
-                    ms
-                } = this.records[index];
-                if (ms > max) max = ms;
-                if (ms < min) min = ms;
-                if (op.length > maxOpLength) maxOpLength = op.length;
-            }
-            for (let index = 0; index < this.records.length; index++) {
-                const record = this.records[index];
-                const {
-                    op,
-                    ms
-                } = record;
-                record.percentageMin = (((ms / min) * 100)).toFixed(2);
-                record.percentageMax = (((ms / max) * 100)).toFixed(2);
-                let opColumn = `  [*] Operation «${op}»:`.padEnd(maxOpLength + 22);
-                let msColumn = `${ms} ms`.padStart(minPad);
-                const isMin = record.percentageMin === "100.00";
-                const isMax = record.percentageMax === "100.00";
-                if (isMin) {
-                    const minColumn = SpeedObserver.colors.style(minStyleName).text(` ${record.percentageMin} %`.padStart(minPad));
-                    const maxColumn = ` ${record.percentageMax} %`.padStart(minPad);
-                    opColumn = SpeedObserver.colors.style(minStyle).text(opColumn);
-                    msColumn = SpeedObserver.colors.style(minStyle).text(msColumn);
-                    const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn} │`;
-                    const formatted = msg;
-                    console.log(formatted);
-                } else if (isMax) {
-                    const minColumn = ` ${record.percentageMin} %`.padStart(minPad);
-                    const maxColumn = SpeedObserver.colors.style(maxStyleName).text(` ${record.percentageMax} %`.padStart(minPad));
-                    opColumn = SpeedObserver.colors.style(maxStyle).text(opColumn);
-                    msColumn = SpeedObserver.colors.style(maxStyle).text(msColumn);
-                    const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn} │`;
-                    const formatted = msg;
-                    console.log(formatted);
-                } else {
-                    const maxColumn = ` ${record.percentageMax} %`.padStart(minPad);
-                    const minColumn = ` ${record.percentageMin} %`.padStart(minPad);
-                    const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn} │`;
-                    console.log(msg);
-                }
-            }
-        };
-        static colors = {
+        if (typeof global !== 'undefined') {
+            global['Colors'] = mod;
+        }
+        if (typeof module !== 'undefined') {
+            module.exports = mod;
+        }
+    })(function() {
+
+        return Object.assign({
             available: {
 
                 // estilos
@@ -168,6 +102,160 @@
                         return `${begin}${text}${end}`;
                     }
                 }
+            },
+            stripAnsi: function(str) {
+                return str.replace(/\x1b\[[0-9;]*m/g, "");
+            },
+            box: function(text, style = "") {
+                const lines = text.split("\n");
+                const cleanLines = lines.map(l => this.stripAnsi(l));
+                const width = Math.max(...cleanLines.map(l => l.length));
+                const top = "┌" + "─".repeat(width + 3) + "┐";
+                const bottom = "└" + "─".repeat(width + 3) + "┘";
+                const body = lines
+                    .map(line => {
+                        const clean = this.stripAnsi(line);
+                        const pad = width - clean.length;
+                        return "│ " + line + " ".repeat(pad) + " │";
+                    })
+                    .join("\n");
+                return `${top}\n${body}\n${bottom}`;
+            }
+        }, {
+            table: function table(listOfColumns, options = {}) {
+                const Table = require("cli-table3");
+                const table = new Table(options);
+                table.push(...listOfColumns);
+                return table.toString();
+            },
+        });
+
+    });
+
+    const SpeedObserver = class SpeedObserver {
+        static create = function(...args) {
+            return new this(...args);
+        };
+        constructor() {
+            this.startedAt = new Date();
+            this.records = [];
+        }
+        start = function() {
+            this.startedAt = new Date();
+        };
+        stop = function() {
+            return (new Date()).getTime() - this.startedAt.getTime();
+        };
+        print = function(op = "Operation", ms = false, msg = '  [*] Operation «{op}» took: {ms} milliseconds') {
+            const time = typeof ms === "number" ? ms : this.stop();
+            const out = msg.replace("{op}", op).replace("{ms}", time);
+            console.log(out);
+        };
+        save = function(op, extra = {}) {
+            this.records.push({
+                op: op,
+                ms: this.stop(),
+                ...extra,
+            });
+        };
+        report = function(asText = false) {
+            const minPad = 13;
+            const minStyle = "black,bgGreen";
+            const minStyleName = "greenBright";
+            const maxStyle = "black,bgRed";
+            const maxStyleName = "redBright";
+            if (this.records.length === 0) return;
+            let max = -Infinity;
+            let min = Infinity;
+            let maxOpLength = 0;
+            for (let index = 0; index < this.records.length; index++) {
+                const {
+                    op,
+                    ms
+                } = this.records[index];
+                if (ms > max) max = ms;
+                if (ms < min) min = ms;
+                if (op.length > maxOpLength) maxOpLength = op.length;
+            }
+            const safeMin = min === 0 ? 1 : min;
+            const safeMax = max === 0 ? 1 : max;
+            let out = "";
+            for (let index = 0; index < this.records.length; index++) {
+                const record = this.records[index];
+                const {
+                    op,
+                    ms
+                } = record;
+                record.percentageMin = (((Math.max(ms, 1) / safeMin) * 100)).toFixed(2);
+                record.percentageMax = (((Math.max(ms, 1) / safeMax) * 100)).toFixed(2);
+                let opColumn = `  [⏳] ${op}:`.padEnd(maxOpLength + 22);
+                let msColumn = `${ms} ms`.padStart(minPad);
+                const isMin = record.percentageMin === "100.00";
+                const isMax = record.percentageMax === "100.00";
+                if (isMin) {
+                    const minColumn = SpeedObserver.colors.style(minStyleName).text(` ${record.percentageMin} %`.padStart(minPad));
+                    const maxColumn = ` ${record.percentageMax} %`.padStart(minPad);
+                    opColumn = SpeedObserver.colors.style(minStyle).text(opColumn);
+                    msColumn = SpeedObserver.colors.style(minStyle).text(msColumn);
+                    const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn}`;
+                    const formatted = msg;
+                    out += formatted;
+                } else if (isMax) {
+                    const minColumn = ` ${record.percentageMin} %`.padStart(minPad);
+                    const maxColumn = SpeedObserver.colors.style(maxStyleName).text(` ${record.percentageMax} %`.padStart(minPad));
+                    opColumn = SpeedObserver.colors.style(maxStyle).text(opColumn);
+                    msColumn = SpeedObserver.colors.style(maxStyle).text(msColumn);
+                    const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn}`;
+                    const formatted = msg;
+                    out += formatted;
+                } else {
+                    const maxColumn = ` ${record.percentageMax} %`.padStart(minPad);
+                    const minColumn = ` ${record.percentageMin} %`.padStart(minPad);
+                    const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn}`;
+                    out += msg;
+                }
+                out += "\n";
+            }
+            if (asText) {
+                return out.trim();
+            }
+            console.log(this.constructor.colors.box(out.trim()));
+        };
+        static colors = Colors;
+        static reportCollection = function(testResults) {
+            Iterating_collections: for (let index = 0; index < testResults.length; index++) {
+                const testInfo = testResults[index];
+                const {
+                    title,
+                    tests
+                } = testInfo;
+                const cols = [];
+                Iterating_files:
+                    for (let indexFile = 0; indexFile < tests.length; indexFile++) {
+                        const test = tests[indexFile];
+                        const {
+                            op,
+                            status,
+                            ms
+                        } = test;
+                        cols.push([
+                            SpeedObserver.colors.style("italic,white").text(` ⏳ ${ms} ms `),
+                            status,
+                            SpeedObserver.colors.style("italic,magenta").text(op),
+                        ]);
+                    }
+                console.log(SpeedObserver.colors.table([
+                    // ["Time", "Status", "File"]
+                ].concat(cols), {
+                    head: [{
+                        colSpan: 3,
+                        content: title
+                    }],
+                    style: {
+                        border: ["yellow"],
+                        head: ["white", "bold"],
+                    }
+                }));
             }
         };
     };

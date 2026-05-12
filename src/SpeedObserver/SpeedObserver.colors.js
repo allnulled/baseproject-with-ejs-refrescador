@@ -76,5 +76,23 @@
         return `${begin}${text}${end}`;
       }
     }
+  },
+  stripAnsi: function(str) {
+    return str.replace(/\x1b\[[0-9;]*m/g, "");
+  },
+  box: function(text, style = "") {
+    const lines = text.split("\n");
+    const cleanLines = lines.map(l => this.stripAnsi(l));
+    const width = Math.max(...cleanLines.map(l => l.length));
+    const top = "┌" + "─".repeat(width + 3) + "┐";
+    const bottom = "└" + "─".repeat(width + 3) + "┘";
+    const body = lines
+      .map(line => {
+        const clean = this.stripAnsi(line);
+        const pad = width - clean.length;
+        return "│ " + line + " ".repeat(pad) + " │";
+      })
+      .join("\n");
+    return `${top}\n${body}\n${bottom}`;
   }
 }

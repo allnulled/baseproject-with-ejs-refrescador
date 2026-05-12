@@ -1,10 +1,11 @@
-function() {
+function(asText = false) {
   const minPad = 13;
-  const minStyle = "underline,bold,greenBright";
+  const minStyle = "black,bgGreen";
   const minStyleName = "greenBright";
-  const maxStyle = "underline,bold,redBright";
+  const maxStyle = "black,bgRed";
   const maxStyleName = "redBright";
-  let max = 0;
+  if (this.records.length === 0) return;
+  let max = -Infinity;
   let min = Infinity;
   let maxOpLength = 0;
   for (let index = 0; index < this.records.length; index++) {
@@ -13,12 +14,15 @@ function() {
     if (ms < min) min = ms;
     if (op.length > maxOpLength) maxOpLength = op.length;
   }
+  const safeMin = min === 0 ? 1 : min;
+  const safeMax = max === 0 ? 1 : max;
+  let out = "";
   for (let index = 0; index < this.records.length; index++) {
     const record = this.records[index];
     const { op, ms } = record;
-    record.percentageMin = (((ms / min) * 100)).toFixed(2);
-    record.percentageMax = (((ms / max) * 100)).toFixed(2);
-    let opColumn = `  [*] Operation «${op}»:`.padEnd(maxOpLength + 22);
+    record.percentageMin = (((Math.max(ms,1) / safeMin) * 100)).toFixed(2);
+    record.percentageMax = (((Math.max(ms,1) / safeMax) * 100)).toFixed(2);
+    let opColumn = `  [⏳] ${op}:`.padEnd(maxOpLength + 22);
     let msColumn = `${ms} ms`.padStart(minPad);
     const isMin = record.percentageMin === "100.00";
     const isMax = record.percentageMax === "100.00";
@@ -27,22 +31,27 @@ function() {
       const maxColumn = ` ${record.percentageMax} %`.padStart(minPad);
       opColumn = SpeedObserver.colors.style(minStyle).text(opColumn);
       msColumn = SpeedObserver.colors.style(minStyle).text(msColumn);
-      const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn} │`;
+      const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn}`;
       const formatted = msg;
-      console.log(formatted);
+      out += formatted;
     } else if(isMax) {
       const minColumn = ` ${record.percentageMin} %`.padStart(minPad);
       const maxColumn = SpeedObserver.colors.style(maxStyleName).text(` ${record.percentageMax} %`.padStart(minPad));
       opColumn = SpeedObserver.colors.style(maxStyle).text(opColumn);
       msColumn = SpeedObserver.colors.style(maxStyle).text(msColumn);
-      const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn} │`;
+      const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn}`;
       const formatted = msg;
-      console.log(formatted);
+      out += formatted;
     } else {
       const maxColumn = ` ${record.percentageMax} %`.padStart(minPad);
       const minColumn = ` ${record.percentageMin} %`.padStart(minPad);
-      const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn} │`;
-      console.log(msg);
+      const msg = `${opColumn} │ ${msColumn} │ ${minColumn} │ ${maxColumn}`;
+      out += msg;
     }
+    out += "\n";
   }
+  if(asText) {
+    return out.trim();
+  }
+  console.log(this.constructor.colors.box(out.trim()));
 }

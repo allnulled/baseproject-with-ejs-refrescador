@@ -11,6 +11,8 @@
   }
 })(function () {
   
-  return <%-await inc("src/SpeedObserver/SpeedObserver.colors.js") %>
+  return Object.assign(<%-await inc("src/SpeedObserver/SpeedObserver.colors.js") %>, {
+    table: <%-await inc("src/Colors/Colors.prototype.table.js") %>,
+  });
 
 });
