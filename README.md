@@ -27,3 +27,10 @@ ModulerV3.js
 moduler-v3.dist.js
 ```
 
+## APIs adjuntas
+
+- `Colors` en `dist/colors.dist.js`
+   - solo para node.js
+- `SpeedObserver` en `dist/speed-observer.dist.js`
+   - solo para node.js
+   - depende de `Colors`

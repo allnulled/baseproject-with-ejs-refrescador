@@ -13,6 +13,7 @@
   
   return Object.assign(<%-await inc("src/SpeedObserver/SpeedObserver.colors.js") %>, {
     table: <%-await inc("src/Colors/Colors.prototype.table.js") %>,
+    borderlessTable: <%-await inc("src/Colors/Colors.prototype.borderlessTable.js") %>,
   });
 
 });

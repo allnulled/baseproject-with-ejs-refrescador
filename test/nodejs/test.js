@@ -24,6 +24,7 @@
     }
     return isSelected;
   };
+  let globalErrors = [];
   const evaluarDirectorio = async function (settingsDir, crono1) {
     crono1.start();
     const initDir = new Date();
@@ -33,7 +34,7 @@
       console.log(` ❓ Ignoring tests of directory: «${dirName}»`);
       return false;
     }
-    console.log(Colors.style("cyan").text(" 🔻 Running tests of directory: ") + dirName);
+    console.log(Colors.style("cyan").text(" 🔻 Running collection of tests of directory: ") + dirName);
     const files = await fs.promises.readdir(dir);
     const errors = [];
     const cronoFiles = SpeedObserver.create();
@@ -52,38 +53,39 @@
       // console.log(` [*] Starting test: «${filepath}»`);
       let status = "pending";
       try {
+        ///////////////////////////////////
+        ///////////////////////////////////
+        ///////////////////////////////////
         const testCallback = require(file);
-        await testCallback({ ModulerV3, SpeedObserver }, parameters);
-        console.log(Colors.style("cyan").text(` ✅ Success: `) + `«${filepath}»`);
+        await testCallback({ ModulerV3, SpeedObserver, Colors, settings }, parameters);
+        console.log(Colors.style("greenBright").text(`   ✅ Success: «${filepath}»`));
         status = "ok";
       } catch (error) {
         status = "failed";
-        console.log(Colors.style("red").text(` ⛔️ Failure: `) + `«${filepath}»`);
+        console.log("   ⛔️ " + Colors.style("red,underline").text(`Failure: «${filepath}»`));
         errors.push({ error, testId: file, testPath: filepath });
       } finally {
-        cronoFiles.save(`Test file «${filepath}»`, { status });
+        cronoFiles.save(`File «${filepath}»`, { status });
+        ///////////////////////////////////
+        ///////////////////////////////////
+        ///////////////////////////////////
       }
     }
     if (errors.length) {
       localStatus = "failed";
       let errorMessage = "";
-      errorMessage += Colors.style("red,bold").text(`❌ Tests failed with «${errors.length}» errors:`);
-      for (let index = 0; index < errors.length; index++) {
-        const errorInfo = errors[index];
-        const { error, testPath } = errorInfo;
-        errorMessage += `\n  ${index + 1}. ❌ Error in test of:\n    - ${testPath}\n`;
-        if(error) errorMessage += `${error.name} => ${error.message}\n${error.stack}`;
-        else errorMessage += `${error}`;
-      }
-      console.log(Colors.table([[errorMessage]], { style: { border: ["red"] } }));
+      errorMessage += Colors.style("red,bold").text(`   ⛔️⛔️ Failed collection of tests of «${dirName}» with «${errors.length}» errors`);
+      console.log(errorMessage);
     } else {
       localStatus = "ok";
-      console.log(Colors.style("cyan,bold").text(` 🟢 Collection tests of «${dirName}» passed successfully.`));
+      console.log(Colors.style("greenBright,bold").text(`   ✅✅ Succeded collection of tests of «${dirName}» successfully.`));
     }
-    crono1.save(`Test collection of «${settingsDir}»`, { status: localStatus });
+    crono1.save(`Collection «${settingsDir}»`, { status: localStatus });
     const total = (new Date()).getTime() - initDir.getTime();
+    globalErrors = globalErrors.concat(errors);
     return { cronoFiles, total };
   };
+  console.log(Colors.style("cyan").text("▶️ 🧪 Starting tests"));
   const crono1 = SpeedObserver.create();
   const cronos = [];
   let initAll = new Date();
@@ -94,14 +96,26 @@
   }
   const durationAll = (new Date()).getTime() - initAll.getTime();
   if (settings.showMetrics) {
-    SpeedObserver.reportCollection([{
+    await SpeedObserver.reportCollection([{
       title: "All collections",
       tests: crono1.records,
     }].concat(cronos.map(o => {
       return {
-        title: `Test collection of «${o.dir}»`,
+        title: `Collection «${o.dir}»`,
         tests: o.crono.records,
       };
     })), durationAll);
+    if(globalErrors.length) {
+      console.log(Colors.style("bold,red").text(" 🔻❌ Test errors review: " + globalErrors.length));
+      for(let index=0; index<globalErrors.length; index++) {
+        const errorInfo = globalErrors[index];
+        const header = Colors.style("red,bold").text(`🔴 ERR-${index+1}. ${errorInfo.error.name} at:\n📄 `) + Colors.style("black,bgYellow").text(" " + errorInfo.testPath + " ");
+        let out = "";
+        out += `${errorInfo.error.name}`;
+        out += `: ${errorInfo.error.message}`;
+        out += ` {\n  ${errorInfo.error.stack}\n}`;
+        console.log(Colors.table([[header],[out]], { style: { border: ["red"] } }));
+      }
+    }
   }
 })();

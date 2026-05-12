@@ -6,7 +6,7 @@ module.exports = {
   ],
   tests: [
     "*", // todos los tests
-    "performance-metrics"
+    "!performance-metrics"
   ],
   showMetrics: true,
 };
