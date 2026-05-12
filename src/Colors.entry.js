@@ -1,16 +1,16 @@
 (function (factory) {
   const mod = factory();
   if (typeof window !== 'undefined') {
-    window['ModulerV3'] = mod;
+    window['Colors'] = mod;
   }
   if (typeof global !== 'undefined') {
-    global['ModulerV3'] = mod;
+    global['Colors'] = mod;
   }
   if (typeof module !== 'undefined') {
     module.exports = mod;
   }
 })(function () {
   
-    <%-await inc("src/ModulerV3.js")%>
+  return <%-await inc("src/SpeedObserver/SpeedObserver.colors.js") %>
 
 });

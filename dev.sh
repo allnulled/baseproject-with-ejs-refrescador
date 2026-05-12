@@ -8,6 +8,7 @@ refrescador \
     -w "$(pwd)" \
     -i "**/node_modules/**" \
     -i "**.dist.**" \
+    -i "**/dist/**" \
     -d 0 \
     -e "sh" \
     -e "ts" \
