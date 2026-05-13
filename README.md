@@ -34,3 +34,9 @@ moduler-v3.dist.js
 - `SpeedObserver` en `dist/speed-observer.dist.js`
    - solo para node.js
    - depende de `Colors`
+
+## Ficheros de configuraciones
+
+- `test/test-settings.js`
+   - algunas configuraciones de los tests
+- `test/test-settings.js`

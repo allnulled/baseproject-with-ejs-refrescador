@@ -1,0 +1,1 @@
+(typeof window !== "undefined") && (typeof document !== "undefined") && (typeof location !== "undefined")

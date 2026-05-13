@@ -1,0 +1,1 @@
+(typeof global !== "undefined") && (typeof process !== "undefined") && (typeof require !== "undefined")

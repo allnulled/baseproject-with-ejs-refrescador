@@ -26,6 +26,7 @@ const methods = {
     } catch (error) {
       // @OK-
     }
+    console.log(` 🔨 Building «${output}»`);
     await require("fs").promises.writeFile(abs(output), source, "utf8");
   },
   instrumentSources: async function() {

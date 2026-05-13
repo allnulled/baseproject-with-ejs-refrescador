@@ -5,8 +5,9 @@
   const Colors = require(__dirname + "/../../dist/colors.dist.js");
   const settings = require(__dirname + "/../test-settings.js");
   const { inc, abs } = testUtils;
-  const ModulerV3 = require(__dirname + "/../../dist-instrumented/moduler-v3.dist.js");
+  const ModulerV3 = require(__dirname + "/../../coverage/dist/moduler-v3.dist.js");
   const SpeedObserver = require(__dirname + "/../../dist/speed-observer.dist.js");
+  const PathLocator = require(__dirname + "/../../coverage/dist/path-locator.dist.js");
   const matchesTestRules = function (file) {
     let isSelected = false;
     Is_test_selected:
@@ -57,7 +58,7 @@
         ///////////////////////////////////
         ///////////////////////////////////
         const testCallback = require(file);
-        await testCallback({ ModulerV3, SpeedObserver, Colors, settings, testUtils });
+        await testCallback({ ModulerV3, SpeedObserver, Colors, PathLocator, settings, testUtils });
         console.log(Colors.style("greenBright").text(`   ✅ Success: «${filepath}»`));
         status = "ok";
       } catch (error) {
@@ -110,11 +111,12 @@
         console.log(Colors.style("bold,red").text(" 🔻❌ Test errors review: " + globalErrors.length));
         for (let index = 0; index < globalErrors.length; index++) {
           const errorInfo = globalErrors[index];
-          const header = Colors.style("red,bold").text(`🔴 ERR-${index + 1}. ${errorInfo.error.name} at:\n📄 `) + Colors.style("black,bgYellow").text(" " + errorInfo.testPath + " ");
+          const header = Colors.style("bold,redBright").text(Colors.padLinesToMax(`🔴 ERR-${index + 1}. ${errorInfo.error.name} at:\n📄 ${errorInfo.testPath} `));
           let out = "";
           out += `${errorInfo.error.name}`;
           out += `: ${errorInfo.error.message}`;
           out += ` {\n  ${errorInfo.error.stack}\n}`;
+          out = Colors.style("yellowBright").text(Colors.padLinesToMax(out));
           console.log(Colors.table([[header], [out]], { style: { border: ["red"] } }));
         }
       }

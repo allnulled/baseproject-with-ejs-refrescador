@@ -3,6 +3,7 @@ module.exports = {
     "performance-metrics",
     "moduler-v3",
     "compiler",
+    "path-locator",
   ],
   tests: [
     "*", // todos los tests
