@@ -5,6 +5,8 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$DIR"
 cd ..
 
+# -x 'node dev/build.js @{refrescador.file}' \
+
 refrescador \
     -w "$(pwd)" \
     -i "**/node_modules/**/*" \
@@ -22,7 +24,7 @@ refrescador \
     -e "css" \
     -e "html" \
     -e "md" \
-    -x 'node dev/build.js @{refrescador.file}' \
+    -x 'bash dev/loop.sh @{refrescador.file}' \
     -s "test/browser" \
     -up "moduler-v3" \
     -mf "TODO.md" \

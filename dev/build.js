@@ -1,4 +1,5 @@
 const main = async function (file = process.argv[2]) {
+  if(typeof file !== "string") throw new Error("required file to be string");
   if(file.includes("/dist")) return false;
   const { methods } = require(__dirname + "/../test/test-utils.js");
   await methods.buildSource("src/ModulerV3/ModulerV3.entry.js", "dist/moduler-v3.dist.js");

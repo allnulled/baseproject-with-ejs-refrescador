@@ -4,15 +4,16 @@
   const testUtils = require(__dirname + "/../test-utils.js");
   const Colors = require(__dirname + "/../../dist/colors.dist.js");
   const settings = require(__dirname + "/../test-settings.js");
+  const instrumentalSubpath = settings.makeCoverage ? "dev/coverage/" : "";
   const { inc, abs } = testUtils;
-  const ModulerV3 = require(__dirname + "/../../dev/coverage/dist/moduler-v3.dist.js");
+  const ModulerV3 = require(__dirname + "/../../" + instrumentalSubpath + "dist/moduler-v3.dist.js");
   const SpeedObserver = require(__dirname + "/../../dist/speed-observer.dist.js");
-  const PathLocator = require(__dirname + "/../../dev/coverage/dist/path-locator.dist.js");
+  const PathLocator = require(__dirname + "/../../" + instrumentalSubpath + "dist/path-locator.dist.js");
   const matchesTestRules = function (file) {
     let isSelected = false;
     Is_test_selected:
-    for (let index = 0; index < settings.tests.length; index++) {
-      const testRule = settings.tests[index];
+    for (let index = 0; index < settings.testsSelectors.length; index++) {
+      const testRule = settings.testsSelectors[index];
       if (testRule === "*") isSelected = true;
       else if (testRule === "!*") isSelected = false;
       else if (testRule.startsWith("!") && file.includes(testRule.substr(1))) {
@@ -97,7 +98,7 @@
   }
   const durationAll = (new Date()).getTime() - initAll.getTime();
   Muestra_metricas: {
-    if (settings.showMetrics) {
+    if (settings.showPerformanceMetrics) {
       await SpeedObserver.reportCollection([{
         title: "All collections",
         tests: crono1.records,
@@ -121,7 +122,8 @@
         }
       }
     }
-    Genera_reporte_de_cobertura: {
+    Genera_reporte_de_cobertura:
+    if(settings.makeCoverage) {
       await require(__dirname + "/test-coverage.js");
     }
   }

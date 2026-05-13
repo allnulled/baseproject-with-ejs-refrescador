@@ -30,7 +30,7 @@ const methods = {
     await require("fs").promises.writeFile(abs(output), source, "utf8");
   },
   instrumentSources: async function() {
-    const instrumentation = require(abs("dev/instrument.js"));
+    const instrumentation = require(abs("dev/tool/instrument.js"));
     await instrumentation(require(__dirname + "/test-settings.js").nycOptions);
     return;
   },
@@ -39,13 +39,23 @@ const methods = {
   }
 };
 const expect = {
-  because: function (id = "undetermined reason") {
+  because: function (id = undefined) {
     return {
       toNotThrow: function (callback) {
-        callback();
+        try {
+          callback();
+        } catch (error) {
+          console.log(error);
+          throw new Error("expectation throws: " + id);
+        }
       },
       toNotThrowAsync: async function (callback) {
-        await callback();
+        try {
+          await callback();
+        } catch (error) {
+          console.log(error);
+          throw new Error("expectation throws async: " + id);
+        }
       },
       toThrow: function (callback) {
         let hasThrown = false;

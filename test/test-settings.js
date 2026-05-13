@@ -5,11 +5,12 @@ module.exports = {
     "compiler",
     "path-locator",
   ],
-  tests: [
+  testsSelectors: [
     "*", // todos los tests
     "!performance-metrics"
   ],
-  showMetrics: true,
+  makeCoverage: true,
+  showPerformanceMetrics: true,
   nycOptions: {
     exclude: [
       "**/colors.dist.js",

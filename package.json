@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "main": "moduler-v3.dist.js",
   "scripts": {
-    "dev": "bash dev/dev.sh",
     "build": "node dev/build.js",
-    "test": "nyc node test/nodejs/test.js"
+    "test": "node test/nodejs/test.js",
+    "dev": "bash dev/dev.sh",
+    "devtool": "node dev/tool.js",
+    "devtool:instrument": "node dev/tool.js instrument",
+    "devtool:document": "node dev/tool.js document"
   },
   "keywords": [],
   "author": "allnulled",

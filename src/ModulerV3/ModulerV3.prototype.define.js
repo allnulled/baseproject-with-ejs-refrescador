@@ -1,9 +1,8 @@
 async function(options) {
   const definition = new ModulerV3.Definition({
-    input: options,
     moduler: this,
+    ...options,
   });
-  await definition._lockProcess();
-  await definition._validateDefineOptions();
-  await definition._registerDefinition();
+  const registration = new ModulerV3.Registration(definition);
+  await registration.commit();
 }
