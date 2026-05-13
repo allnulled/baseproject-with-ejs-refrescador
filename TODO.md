@@ -1,3 +1,4 @@
+- [x] nyc automático de los dist
 - [ ] define(string)
 - [ ] define(object con id)
 - [ ] define(object con url)
@@ -7,4 +8,6 @@
 - [ ] define(object con factory)
 - [ ] mean(con lo mismo que define)
 - [ ] inject.source(string)
-- [ ] inject.template(string).with(...juego de llaves)
+- [ ] inject.template(...juego de llaves).with(...juego de llaves)
+- [ ] inject.string(string)
+- [ ] inject.factory(...juego de llaves).with(...juego de llaves)

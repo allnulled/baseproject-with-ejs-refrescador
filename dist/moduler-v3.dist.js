@@ -15,20 +15,73 @@
         static create = function(...args) {
             return new this(...args);
         };
+        static Definition = class {
+            constructor(extra = {}) {
+                Object.assign(this, extra);
+                this.assert(typeof extra.input === "object", "required «input» as object on definition");
+                this.assert(typeof extra.moduler === "object", "required «moduler» as object on definition");
+                this.assert(extra.moduler instanceof ModulerV3, "required «moduler» as instance of ModulerV3 on definition");
+            }
+            assert = function(condition, message) {
+                if (!condition) throw new Error("assertion error on «ModuleV3.Definition»: " + message);
+            };
+            _lockProcess = function() {
+                if (this._isLocked) {
+                    throw new Error("definition cannot be overwritten");
+                }
+                this._isLocked = true;
+            };
+            _validateDefineOptions = function() {
+                const possibleRequired = ["module", "factory", "url", "file", "path"];
+                Classifying_type:
+                    if (typeof this.input.type !== "string") {
+                        for (let index = 0; index < possibleRequired.length; index++) {
+                            const requiredProp = possibleRequired[index];
+                            if (requiredProp in this.input) {
+                                this.type = requiredProp;
+                                break Classifying_type;
+                            }
+                        }
+                    } else {
+                        this.type = this.input.type;
+                    }
+                this.assert(typeof this.type === "string", `required one of: ${possibleRequired.map(p => "«" + p + "»").join(" | ")}`);
+                Validating_type: {
+                    if (this.type === "module") {
+                        this.assert(typeof this.input.module !== "undefined", `required «module» as not undefined`);
+                    } else if (this.type === "factory") {
+                        this.assert(typeof this.input.factory === "function", `required «factory» as function`);
+                    } else if (this.type === "url") {
+                        this.assert(typeof this.input.url === "string", `required «url» as string`);
+                    } else if (this.type === "file") {
+                        this.assert(typeof this.input.file === "string", `required «file» as string`);
+                    } else if (this.type === "path") {
+                        this.assert(typeof this.input.path === "string", `required «path» as string`);
+                    } else {
+                        throw new Error(`type «${this.type}» was not identified`);
+                    }
+                }
+            };
+            _registerDefinition = function() {
+                //console.log(this.input);
+            };
+        };
         constructor(basedir) {
             this.assert(typeof basedir === "string", "basedir must be string");
             this.basedir = basedir;
             this.modules = {};
         }
         assert = function(condition, message) {
-            if (!condition) throw new Error(message);
+            if (!condition) throw new Error("assertion error on «ModuleV3»: " + message);
         };
-        define = async function(userOptions) {
-            const defineContext = {
-                userOptions
-            };
-            await this._validateDefineOptions(defineContext);
-            await this._registerDefinition(defineContext);
+        define = async function(options) {
+            const definition = new ModulerV3.Definition({
+                input: options,
+                moduler: this,
+            });
+            await definition._lockProcess();
+            await definition._validateDefineOptions();
+            await definition._registerDefinition();
         };
         mean = function(id) {
             if (id in this.modules) {
@@ -45,41 +98,6 @@
                 return record.exports;
             })();
             return record.promise;
-        };
-        _validateDefineOptions = function(defineContext) {
-            const possibleRequired = ["module", "factory", "url", "file", "path"];
-            const {
-                userOptions
-            } = defineContext;
-            if (typeof userOptions === "string") {
-                Object.assign(defineContext, {
-                    options: {
-                        id: userOptions
-                    }
-                });
-            } else if (typeof userOptions === "object") {
-                Object.assign(defineContext, {
-                    options: {
-                        ...userOptions
-                    }
-                });
-            } else throw new Error(`Invalid define options type «${typeof userOptions}»`);
-            this.assert(typeof options.id === "string", "define requires property id");
-            Object.assign(defineContext, {
-                id: options.id
-            });
-            let hasType = false;
-            Ierating_props:
-                for (let prop in options) {
-                    if (possibleRequired.includes(prop)) {
-                        hasType = prop;
-                        break Ierating_props;
-                    }
-                }
-            this.assert(typeof hasType === "string", `define required type through any property of «${possibleRequired.join(",")}»`);
-            Object.assign(defineContext, {
-                type: hasType
-            });
         };
     };
 

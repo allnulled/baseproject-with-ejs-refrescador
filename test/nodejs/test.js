@@ -1,11 +1,11 @@
 (async function () {
   const fs = require("fs");
   const path = require("path");
-  const parameters = require(__dirname + "/../test-utils.js");
+  const testUtils = require(__dirname + "/../test-utils.js");
   const Colors = require(__dirname + "/../../dist/colors.dist.js");
   const settings = require(__dirname + "/../test-settings.js");
-  const { inc, abs } = parameters;
-  const ModulerV3 = require(__dirname + "/../../dist/moduler-v3.dist.js");
+  const { inc, abs } = testUtils;
+  const ModulerV3 = require(__dirname + "/../../dist-instrumented/moduler-v3.dist.js");
   const SpeedObserver = require(__dirname + "/../../dist/speed-observer.dist.js");
   const matchesTestRules = function (file) {
     let isSelected = false;
@@ -57,7 +57,7 @@
         ///////////////////////////////////
         ///////////////////////////////////
         const testCallback = require(file);
-        await testCallback({ ModulerV3, SpeedObserver, Colors, settings }, parameters);
+        await testCallback({ ModulerV3, SpeedObserver, Colors, settings, testUtils });
         console.log(Colors.style("greenBright").text(`   ✅ Success: «${filepath}»`));
         status = "ok";
       } catch (error) {
@@ -78,14 +78,14 @@
       console.log(errorMessage);
     } else {
       localStatus = "ok";
-      console.log(Colors.style("greenBright,bold").text(`   ✅✅ Succeded collection of tests of «${dirName}» successfully.`));
+      console.log(Colors.style("greenBright,bold").text(`   ✅✅ Succeded collection of tests of «${dirName}».`));
     }
     crono1.save(`Collection «${settingsDir}»`, { status: localStatus });
     const total = (new Date()).getTime() - initDir.getTime();
     globalErrors = globalErrors.concat(errors);
     return { cronoFiles, total };
   };
-  console.log(Colors.style("cyan").text("▶️ 🧪 Starting tests"));
+  console.log(Colors.style("yellow,bold").text(" 🧪 Starting tests"));
   const crono1 = SpeedObserver.create();
   const cronos = [];
   let initAll = new Date();
@@ -95,27 +95,33 @@
     if (cronoFiles) cronos.push({ dir: testDir, crono: cronoFiles, total });
   }
   const durationAll = (new Date()).getTime() - initAll.getTime();
-  if (settings.showMetrics) {
-    await SpeedObserver.reportCollection([{
-      title: "All collections",
-      tests: crono1.records,
-    }].concat(cronos.map(o => {
-      return {
-        title: `Collection «${o.dir}»`,
-        tests: o.crono.records,
-      };
-    })), durationAll);
-    if(globalErrors.length) {
-      console.log(Colors.style("bold,red").text(" 🔻❌ Test errors review: " + globalErrors.length));
-      for(let index=0; index<globalErrors.length; index++) {
-        const errorInfo = globalErrors[index];
-        const header = Colors.style("red,bold").text(`🔴 ERR-${index+1}. ${errorInfo.error.name} at:\n📄 `) + Colors.style("black,bgYellow").text(" " + errorInfo.testPath + " ");
-        let out = "";
-        out += `${errorInfo.error.name}`;
-        out += `: ${errorInfo.error.message}`;
-        out += ` {\n  ${errorInfo.error.stack}\n}`;
-        console.log(Colors.table([[header],[out]], { style: { border: ["red"] } }));
+  Muestra_metricas: {
+    if (settings.showMetrics) {
+      await SpeedObserver.reportCollection([{
+        title: "All collections",
+        tests: crono1.records,
+      }].concat(cronos.map(o => {
+        return {
+          title: `Collection «${o.dir}»`,
+          tests: o.crono.records,
+        };
+      })), durationAll);
+      if (globalErrors.length) {
+        console.log(Colors.style("bold,red").text(" 🔻❌ Test errors review: " + globalErrors.length));
+        for (let index = 0; index < globalErrors.length; index++) {
+          const errorInfo = globalErrors[index];
+          const header = Colors.style("red,bold").text(`🔴 ERR-${index + 1}. ${errorInfo.error.name} at:\n📄 `) + Colors.style("black,bgYellow").text(" " + errorInfo.testPath + " ");
+          let out = "";
+          out += `${errorInfo.error.name}`;
+          out += `: ${errorInfo.error.message}`;
+          out += ` {\n  ${errorInfo.error.stack}\n}`;
+          console.log(Colors.table([[header], [out]], { style: { border: ["red"] } }));
+        }
       }
     }
+    Genera_reporte_de_cobertura: {
+      await require(__dirname + "/test-coverage.js");
+    }
   }
+
 })();

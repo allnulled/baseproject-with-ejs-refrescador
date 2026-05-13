@@ -1,5 +1,9 @@
-async function(userOptions) {
-  const defineContext = { userOptions };
-  await this._validateDefineOptions(defineContext);
-  await this._registerDefinition(defineContext);
+async function(options) {
+  const definition = new ModulerV3.Definition({
+    input: options,
+    moduler: this,
+  });
+  await definition._lockProcess();
+  await definition._validateDefineOptions();
+  await definition._registerDefinition();
 }

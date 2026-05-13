@@ -9,4 +9,10 @@ module.exports = {
     "!performance-metrics"
   ],
   showMetrics: true,
+  nycOptions: {
+    exclude: [
+      "**/colors.dist.js",
+      "**/speed-observer.dist.js",
+    ]
+  },
 };

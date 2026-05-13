@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "moduler-v3.dist.js",
   "scripts": {
-    "dev": "bash dev.sh",
-    "build": "node build.js",
-    "test": "node test/nodejs/test.js"
+    "dev": "bash dev/dev.sh",
+    "build": "node dev/build.js",
+    "test": "nyc node test/nodejs/test.js"
   },
   "keywords": [],
   "author": "allnulled",
@@ -14,7 +14,22 @@
   "devDependencies": {
     "cli-table3": "^0.6.5",
     "ejs": "^5.0.2",
+    "glob": "^13.0.6",
     "js-beautify": "^1.15.4",
+    "nyc": "^18.0.0",
     "strip-ansi": "^7.2.0"
+  },
+  "nyc": {
+    "include": [
+      
+    ],
+    "exclude": [
+      
+    ],
+    "reporter": [
+      "html",
+      "text"
+    ],
+    "all": true
   }
 }

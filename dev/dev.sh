@@ -3,12 +3,15 @@
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 cd "$DIR"
+cd ..
 
 refrescador \
     -w "$(pwd)" \
-    -i "**/node_modules/**" \
-    -i "**.dist.**" \
-    -i "**/dist/**" \
+    -i "**/node_modules/**/*" \
+    -i "**/dist/**/*" \
+    -i "**/coverage/**/*" \
+    -i "**/.nyc_output/**/*" \
+    -i "**/dist-instrumented/**/*" \
     -d 0 \
     -e "sh" \
     -e "ts" \
@@ -18,7 +21,8 @@ refrescador \
     -e "json" \
     -e "css" \
     -e "html" \
-    -x 'node build.js @{refrescador.file}' \
+    -e "md" \
+    -x 'node dev/build.js @{refrescador.file}' \
     -s "test/browser" \
     -up "moduler-v3" \
     -mf "TODO.md" \
