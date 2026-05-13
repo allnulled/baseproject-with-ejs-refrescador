@@ -4,7 +4,7 @@ const reportLib = require("istanbul-lib-report");
 const reports = require("istanbul-reports");
 const rawCoverage = JSON.parse(fs.readFileSync(".nyc_output/out.json", "utf8"));
 const coverageMap = coverageLib.createCoverageMap(rawCoverage);
-const context = reportLib.createContext({ dir: "coverage", coverageMap });
+const context = reportLib.createContext({ dir: "dev/coverage", coverageMap });
 
 reports.create("html").execute(context);
 reports.create("text").execute(context);

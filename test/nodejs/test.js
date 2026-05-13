@@ -5,9 +5,9 @@
   const Colors = require(__dirname + "/../../dist/colors.dist.js");
   const settings = require(__dirname + "/../test-settings.js");
   const { inc, abs } = testUtils;
-  const ModulerV3 = require(__dirname + "/../../coverage/dist/moduler-v3.dist.js");
+  const ModulerV3 = require(__dirname + "/../../dev/coverage/dist/moduler-v3.dist.js");
   const SpeedObserver = require(__dirname + "/../../dist/speed-observer.dist.js");
-  const PathLocator = require(__dirname + "/../../coverage/dist/path-locator.dist.js");
+  const PathLocator = require(__dirname + "/../../dev/coverage/dist/path-locator.dist.js");
   const matchesTestRules = function (file) {
     let isSelected = false;
     Is_test_selected:

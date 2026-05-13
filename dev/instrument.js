@@ -8,6 +8,6 @@ module.exports = async function main(extra) {
       tempDirectory: ".nyc_output",
       ...extra
     });
-    await nyc.instrumentAllFiles("dist", "coverage/dist");
+    await nyc.instrumentAllFiles("dist", "dev/coverage/dist");
     console.log(" 🎷 Successfully instrumented files");
 };
