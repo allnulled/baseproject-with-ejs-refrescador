@@ -20,8 +20,8 @@ module.exports = {
     const dist = require("path").resolve(DevUtils.projectRoot, "dist", filenameDst);
     return dist;
   },
-  beautifyDist: !true,
-  makeCoverage: !true,
+  beautifyDist: true,
+  makeCoverage: true,
   showPerformanceMetrics: true,
   nycOptions: {
     exclude: [
