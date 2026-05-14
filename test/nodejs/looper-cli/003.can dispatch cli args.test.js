@@ -64,10 +64,10 @@ module.exports = async function({ LooperCli }) {
     "three",
   ]);
 
-  LooperCli.assert(output1 === 400, "LooperCli.create o LooperCli.prototype.dispatch no están devolviendo los valores esperados (punto 1)");
+  LooperCli.assert(output1 === 400, "LooperCli.prototype.dispatch no está devolviendo los valores esperados (punto 1)");
 
   const output2 = await cli.dispatch(["group1"]);
 
-  LooperCli.assert(output2 === 100, "LooperCli.create o LooperCli.prototype.dispatch no están devolviendo los valores esperados (punto 2)");
+  LooperCli.assert(output2 === 100, "LooperCli.prototype.dispatch no está devolviendo los valores esperados (punto 2)");
   
 };

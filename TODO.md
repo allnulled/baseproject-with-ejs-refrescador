@@ -1,3 +1,0 @@
-- [x] Tarea 1. LooperCli.dispatch({ ...schema }, [ ...args ]);
-   - [x] Que haga el parseo de los argumentos
-   - [x] Que despache comandos en función de un directorio
