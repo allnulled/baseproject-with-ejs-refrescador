@@ -1,5 +1,6 @@
-module.exports = async function ({ ModulerV3, SpeedObserver }, { inc, abs }) {
+module.exports = async function ({ ModulerV3, SpeedObserver, DevUtils }) {
   const fs = require("fs");
+  const { inc, abs } = DevUtils;
   const cr1 = SpeedObserver.create();
   const ciclos = 5000;
   const intentos = 4;

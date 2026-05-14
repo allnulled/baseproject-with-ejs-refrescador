@@ -81,7 +81,7 @@
     return str.replace(/\x1b\[[0-9;]*m/g, "");
   },
   box: function(text, style = "") {
-    const lines = text.split("\n");
+    const lines = text.split("\n").filter(l => !!l.length);
     const cleanLines = lines.map(l => this.stripAnsi(l));
     const width = Math.max(...cleanLines.map(l => l.length));
     const top = "┌" + "─".repeat(width + 3) + "┐";

@@ -3,33 +3,57 @@ const LooperCli = class {
   return new this(...args);
 };
   static Schema = class Schema {
-  static create(...args) {
-    return new this(...args);
-  }
+  static create = function(...args) {
+  return new this(...args);
+};
   constructor(original) {
-    this.original = original;
-  }
-  parse(schema = {}, args = undefined) {
-    return LooperCli.parseCliArgs(schema, args);
-  }
+  this.original = original;
+};
+  parse = function (args = undefined) {
+  return LooperCli.parseCommandLineArguments(this.original, args);
+};
 };
   static Type = class Type {
   static create(...args) {
     return new this(...args);
   }
   constructor(val) {
-    this.val = val;
-  }
+  this.val = val;
+};
 };
   static type = {
   classes: {
-    String: class extends this.Type {},
-    Null: class extends this.Type {},
-    Boolean: class extends this.Type {},
-    Number: class extends this.Type {},
-    Array: class extends this.Type {},
-    Object: class extends this.Type {},
-    Constant: class extends this.Type {},
+    String: class extends this.Type {
+      static cast = (text) => text;
+    },
+    Null: class extends this.Type {
+      static cast = (text) => null;
+    },
+    Boolean: class extends this.Type {
+      static cast = (text) => {
+        if(text === "true") return true;
+        if(text === "false") return false;
+        throw new Error(`Cannot cast "${text}" to Boolean`);
+      }
+    },
+    Number: class extends this.Type {
+      static cast = (text) => {
+        const n = Number(text);
+        if(Number.isNaN(n)) {
+          throw new Error(`Cannot cast "${text}" to Number`);
+        }
+        return n;
+      }
+    },
+    Array: class extends this.Type {
+      static cast = (text) => text;
+    },
+    Object: class extends this.Type {
+      static cast = (text) => text; 
+    },
+    Constant: class extends this.Type {
+      static cast = (text) => text;
+    },
   },
   Null: function(...args) {
     return new LooperCli.type.classes.Null(...args);
@@ -53,35 +77,16 @@ const LooperCli = class {
     return new LooperCli.type.classes.Object(...args);
   },
 };
-  static castables = {
-  "String": text => text,
-  "Number": text => {
-    const n = Number(text);
-    if(Number.isNaN(n)) {
-      throw new Error(`Cannot cast "${text}" to Number`);
-    }
-    return n;
-  },
-  "Boolean": text => {
-    if(text === "true") return true;
-    if(text === "false") return false;
-    throw new Error(`Cannot cast "${text}" to Boolean`);
-  },
-  "Array": text => text,
-  "Object": text => text,
-  "Null": text => null,
-  "Constant": text => text,
-};
   static isCastableTo = function(arg, typeId, castproxy) {
   try {
-    castproxy.casted = this.castables[typeId](arg);
+    castproxy.casted = this.type.classes[typeId].cast(arg);
     castproxy.type = typeId;
     return true;
   } catch (error) {
     return false;
   }
 };
-  static findClosestWithFile = function(basedir, file = "package.json") {
+  static findClosestDirectoryWithFile = function(basedir, file = "package.json") {
   const fs = require("fs");
   const path = require("path");
   let dir = basedir;
@@ -100,17 +105,14 @@ const LooperCli = class {
   return null;
 };
   static findProjectRoot = function (basedir = process.cwd()) {
-  return this.findClosestWithFile(basedir, "looper.settings.js");
+  return this.findClosestDirectoryWithFile(basedir, "looper.settings.js");
 };;
-  constructor(basedir) {
-    this.basedir = basedir;
-    this.projectRoot = null;
-  }
   static assert = function(condition, message) {
   if(!condition) throw new Error("assertion error on «LooperCli»: " + message);
 };
-  static parseCliArgs = function(schema = {}, argv = [...process.argv].slice(2)) {
+  static parseCommandLineArguments = function(schema = {}, argv = [...process.argv].splice(2)) {
   this.assert(typeof schema === "object" && schema !== null, "schema must be object");
+  this.assert(!Array.isArray(schema), "schema must be object but not array");
   const parsed = { _: [] };
   const aliasMap = {};
   Collecting_aliases_and_setting_defaults:
@@ -146,18 +148,19 @@ const LooperCli = class {
         }
         this.assert(current in schema, `unknown option «${current}» (case 4)`);
         const validTypes = schema[current].type;
+        const typeClasses = LooperCli.type.classes;
         const castproxy = { type: undefined, casted: undefined };
         Iterating_types:
         for (let indexType = 0; indexType < validTypes.length; indexType++) {
           const validType = validTypes[indexType];
-          if ((validType instanceof LooperCli.type.classes.String) && (this.isCastableTo(arg, "String", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Null) && (this.isCastableTo(arg, "Null", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Boolean) && (this.isCastableTo(arg, "Boolean", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Number) && (this.isCastableTo(arg, "Number", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Array) && (this.isCastableTo(arg, "Array", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Object) && (this.isCastableTo(arg, "Object", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Constant) && (this.isCastableTo(arg, "Constant", castproxy))) break Iterating_types;
-          else console.log(validType);
+          if ((validType instanceof typeClasses.String) && (this.isCastableTo(arg, "String", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Null) && (this.isCastableTo(arg, "Null", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Boolean) && (this.isCastableTo(arg, "Boolean", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Number) && (this.isCastableTo(arg, "Number", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Array) && (this.isCastableTo(arg, "Array", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Object) && (this.isCastableTo(arg, "Object", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Constant) && (this.isCastableTo(arg, "Constant", castproxy))) break Iterating_types;
+          else throw new Error(`property «type» on index «${index}» is not a valid type class on option «${current}»`);
         }
         this.assert(castproxy.type !== "undefined", `option «${current}» now of type «${typeof arg}» must be one of «${validTypes.map(t => t.constructor.name).join("|")}»`);
         if (castproxy.type === "Array") parsed[current].push(castproxy.casted);
@@ -169,6 +172,40 @@ const LooperCli = class {
   } else throw new Error("parameter «argv» must be array or object");
   return parsed;
 };
+  constructor(basedir) {
+  this.basedir = basedir;
+  this.projectRoot = null;
+  this._schema = null;
+};
+  assert = function(condition, message) {
+  if(!condition) throw new Error("assertion error on «LooperCli.prototype»: " + message);
+};
+  setSchema = function(schema) {
+  this.schema = new LooperCli.Schema(schema);
+  return this;
+};
+  dispatch = async function dispatch(argv = [...process.argv].splice(2)) {
+  const fs = require("fs");
+  const path = require("path");
+  this.assert(typeof argv === "object", `parameter «argv» must be object`);
+  const args = Array.isArray(argv) ? LooperCli.parseCommandLineArguments(this.schema.original, argv) : argv;
+  const commandRel = path.join(args._.join("/"), "command.js");
+  const commandPath = path.resolve(this.basedir, commandRel);
+  let commandCallback = undefined;
+  try {
+    await fs.promises.readFile(commandPath);
+    commandCallback = require(commandPath);
+  } catch (error) {
+    if(error.code === "ENOENT") {
+      throw new Error(`no command found for «${commandRel}»`);
+    }
+    throw error;
+  }
+  if(typeof commandCallback === "function") {
+    return await commandCallback(args);
+  }
+  return await commandCallback;
+};;
 };
 
 module.exports = LooperCli;

@@ -1,6 +1,3 @@
-- [ ] Tarea 1. LooperCli.dispatch({ ...schema }, [ ...args ]);
-   - [!] Que haga el parseo de los argumentos
-   - [ ] Que pueda usarlo cualquier comando interno
-   - [ ] No se trata de que comande todas las llamadas a la CLI
-   - [ ] Sino de una utilidad para los comandos que se van a ir sacando
-   - [ ] No es el CLI Manager esta API, igual hay que pensar mejor el nombre
+- [x] Tarea 1. LooperCli.dispatch({ ...schema }, [ ...args ]);
+   - [x] Que haga el parseo de los argumentos
+   - [x] Que despache comandos en función de un directorio

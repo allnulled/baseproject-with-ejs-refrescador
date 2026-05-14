@@ -1,3 +1,3 @@
 function (basedir = process.cwd()) {
-  return this.findClosestWithFile(basedir, "looper.settings.js");
+  return this.findClosestDirectoryWithFile(basedir, "looper.settings.js");
 };

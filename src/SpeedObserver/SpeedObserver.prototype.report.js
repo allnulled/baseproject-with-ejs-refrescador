@@ -53,5 +53,5 @@ function(asText = false) {
   if(asText) {
     return out;
   }
-  console.log(this.constructor.colors.box(out.trim()));
+  console.log(this.constructor.colors.box(out));
 }

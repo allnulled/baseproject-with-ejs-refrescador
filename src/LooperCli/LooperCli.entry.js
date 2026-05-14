@@ -1,18 +1,17 @@
 const LooperCli = class {
   static create = <%-await inc("src/common/common.static.create.js")%>;
-  static Schema = <%-await inc("src/LooperCli/Schema.js")%>;
-  static Type = <%-await inc("src/LooperCli/Type.js")%>;
+  static Schema = <%-await inc("src/LooperCli/Schema/Schema.js")%>;
+  static Type = <%-await inc("src/LooperCli/Type/Type.js")%>;
   static type = <%-await inc("src/LooperCli/LooperCli.type.js")%>;
-  static castables = <%-await inc("src/LooperCli/LooperCli.castables.js")%>;
   static isCastableTo = <%-await inc("src/LooperCli/LooperCli.isCastableTo.js")%>;
-  static findClosestWithFile = <%-await inc("src/LooperCli/LooperCli.findClosestWithFile.js")%>;
+  static findClosestDirectoryWithFile = <%-await inc("src/LooperCli/LooperCli.findClosestDirectoryWithFile.js")%>;
   static findProjectRoot = <%-await inc("src/LooperCli/LooperCli.findProjectRoot.js")%>;
-  constructor(basedir) {
-    this.basedir = basedir;
-    this.projectRoot = null;
-  }
   static assert = <%-await inc("src/common/common.assert.js", { owner: "LooperCli" })%>;
-  static parseCliArgs = <%-await inc("src/LooperCli/LooperCli.parseCliArgs.js")%>;
+  static parseCommandLineArguments = <%-await inc("src/LooperCli/LooperCli.parseCommandLineArguments.js")%>;
+  <%-await inc("src/LooperCli/LooperCli.constructor.js")%>;
+  assert = <%-await inc("src/common/common.assert.js", { owner: "LooperCli.prototype" })%>;
+  setSchema = <%-await inc("src/LooperCli/LooperCli.prototype.setSchema.js")%>;
+  dispatch = <%-await inc("src/LooperCli/LooperCli.prototype.dispatch.js")%>;
 };
 
 module.exports = LooperCli;

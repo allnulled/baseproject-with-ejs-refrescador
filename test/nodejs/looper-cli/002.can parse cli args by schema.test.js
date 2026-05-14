@@ -1,6 +1,5 @@
 module.exports = async function({ LooperCli }) {
-  const cli = LooperCli.create();
-  const schema = new LooperCli.Schema({
+  const args = LooperCli.Schema.create({
     file: {
       alias: "f",
       type: [
@@ -8,6 +7,13 @@ module.exports = async function({ LooperCli }) {
         LooperCli.type.Null()
       ],
       default: null,
+    },
+    list: {
+      alias: "l",
+      type: [
+        LooperCli.type.Array(),
+      ],
+      default: [],
     },
     mode: {
       alias: "md",
@@ -32,25 +38,17 @@ module.exports = async function({ LooperCli }) {
       ],
       default: "async",
     },
-  });
-
-  const args = schema.parse({
-    file: {
-      alias: "f",
-      type: [LooperCli.type.Array()],
-      default: [],
-    }
-  }, ["command", "--file", "f1", "f2", "f3"]);
+  }).parse(["command", "--list", "f1", "f2", "f3"]);
 
   LooperCli.assert(typeof args === "object", "LooperCli.Schema.prototype.parse should return object");
   LooperCli.assert(typeof args._ === "object", "args._ should be object");
   LooperCli.assert(args._[0] === "command", "args._[0] should be 'command'");
-  LooperCli.assert(typeof args.file === "object", "args.file should be object");
-  LooperCli.assert(args.file[0] === "f1", "args.file[0] should be 'f1'");
-  LooperCli.assert(args.file[1] === "f2", "args.file[0] should be 'f2'");
-  LooperCli.assert(args.file[2] === "f3", "args.file[0] should be 'f3'");
+  LooperCli.assert(typeof args.list === "object", "args.list should be object");
+  LooperCli.assert(args.list[0] === "f1", "args.list[0] should be 'f1'");
+  LooperCli.assert(args.list[1] === "f2", "args.list[0] should be 'f2'");
+  LooperCli.assert(args.list[2] === "f3", "args.list[0] should be 'f3'");
 
-  const args2 = schema.parse({
+  const args2 = LooperCli.Schema.create({
     bool: {
       alias: "b",
       type: [LooperCli.type.Boolean()],
@@ -76,7 +74,7 @@ module.exports = async function({ LooperCli }) {
       type: [LooperCli.type.Constant("x"), LooperCli.type.Constant("y")],
       default: "z",
     }
-  }, ["comando", "--bool", "true", "false", "--string", "testo", "testo2", "--array", "v1", "v2", "-n", "800"]);
+  }).parse(["comando", "--bool", "true", "false", "--string", "testo", "testo2", "--array", "v1", "v2", "-n", "800"]);
 
   LooperCli.assert(typeof args2 === "object", "LooperCli.Schema.prototype.parse should return object");
   LooperCli.assert(typeof args2._ === "object", "args2._ should be object");
@@ -84,5 +82,5 @@ module.exports = async function({ LooperCli }) {
   LooperCli.assert(args2.bool === false, "args2.bool should be false");
   LooperCli.assert(args2.string === "testo2", "args2.string should be 'testo2'");
   LooperCli.assert(args2.array.length === 2, "args2.array.length should be 2");
-  
+
 };

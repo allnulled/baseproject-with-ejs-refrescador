@@ -1,12 +1,36 @@
 {
   classes: {
-    String: class extends this.Type {},
-    Null: class extends this.Type {},
-    Boolean: class extends this.Type {},
-    Number: class extends this.Type {},
-    Array: class extends this.Type {},
-    Object: class extends this.Type {},
-    Constant: class extends this.Type {},
+    String: class extends this.Type {
+      static cast = (text) => text;
+    },
+    Null: class extends this.Type {
+      static cast = (text) => null;
+    },
+    Boolean: class extends this.Type {
+      static cast = (text) => {
+        if(text === "true") return true;
+        if(text === "false") return false;
+        throw new Error(`Cannot cast "${text}" to Boolean`);
+      }
+    },
+    Number: class extends this.Type {
+      static cast = (text) => {
+        const n = Number(text);
+        if(Number.isNaN(n)) {
+          throw new Error(`Cannot cast "${text}" to Number`);
+        }
+        return n;
+      }
+    },
+    Array: class extends this.Type {
+      static cast = (text) => text;
+    },
+    Object: class extends this.Type {
+      static cast = (text) => text; 
+    },
+    Constant: class extends this.Type {
+      static cast = (text) => text;
+    },
   },
   Null: function(...args) {
     return new LooperCli.type.classes.Null(...args);

@@ -1,6 +1,6 @@
 function(arg, typeId, castproxy) {
   try {
-    castproxy.casted = this.castables[typeId](arg);
+    castproxy.casted = this.type.classes[typeId].cast(arg);
     castproxy.type = typeId;
     return true;
   } catch (error) {

@@ -1,5 +1,6 @@
-function(schema = {}, argv = [...process.argv].slice(2)) {
+function(schema = {}, argv = [...process.argv].splice(2)) {
   this.assert(typeof schema === "object" && schema !== null, "schema must be object");
+  this.assert(!Array.isArray(schema), "schema must be object but not array");
   const parsed = { _: [] };
   const aliasMap = {};
   Collecting_aliases_and_setting_defaults:
@@ -35,18 +36,19 @@ function(schema = {}, argv = [...process.argv].slice(2)) {
         }
         this.assert(current in schema, `unknown option «${current}» (case 4)`);
         const validTypes = schema[current].type;
+        const typeClasses = LooperCli.type.classes;
         const castproxy = { type: undefined, casted: undefined };
         Iterating_types:
         for (let indexType = 0; indexType < validTypes.length; indexType++) {
           const validType = validTypes[indexType];
-          if ((validType instanceof LooperCli.type.classes.String) && (this.isCastableTo(arg, "String", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Null) && (this.isCastableTo(arg, "Null", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Boolean) && (this.isCastableTo(arg, "Boolean", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Number) && (this.isCastableTo(arg, "Number", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Array) && (this.isCastableTo(arg, "Array", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Object) && (this.isCastableTo(arg, "Object", castproxy))) break Iterating_types;
-          else if ((validType instanceof LooperCli.type.classes.Constant) && (this.isCastableTo(arg, "Constant", castproxy))) break Iterating_types;
-          else console.log(validType);
+          if ((validType instanceof typeClasses.String) && (this.isCastableTo(arg, "String", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Null) && (this.isCastableTo(arg, "Null", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Boolean) && (this.isCastableTo(arg, "Boolean", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Number) && (this.isCastableTo(arg, "Number", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Array) && (this.isCastableTo(arg, "Array", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Object) && (this.isCastableTo(arg, "Object", castproxy))) break Iterating_types;
+          else if ((validType instanceof typeClasses.Constant) && (this.isCastableTo(arg, "Constant", castproxy))) break Iterating_types;
+          else throw new Error(`property «type» on index «${index}» is not a valid type class on option «${current}»`);
         }
         this.assert(castproxy.type !== "undefined", `option «${current}» now of type «${typeof arg}» must be one of «${validTypes.map(t => t.constructor.name).join("|")}»`);
         if (castproxy.type === "Array") parsed[current].push(castproxy.casted);
