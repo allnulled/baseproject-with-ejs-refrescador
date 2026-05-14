@@ -1,7 +1,27 @@
-let templateParameters = {};
-const projectRoot = require("path").resolve(__dirname + "/..");
+const templateParameters = {};
+const findProjectRoot = function (file = "looper.settings.js") {
+  const fs = require("fs");
+  const path = require("path");
+  let dir = process.cwd();
+  let previousDir = null;
+  do {
+    try {
+      const filepath = path.resolve(dir, file);
+      fs.readFileSync(filepath);
+      return dir;
+    } catch (error) {
+      previousDir = dir;
+      dir = path.dirname(dir);
+    }
+  } while (dir !== previousDir);
+  return null;
+};
+const projectRoot = findProjectRoot();
 const abs = function (subpath) {
   return require("path").resolve(projectRoot, subpath);
+};
+const relativ = function (subpath) {
+  return require("path").resolve(projectRoot, subpath).replace(projectRoot, "");
 };
 const inc = async function (subpath, callParameters = {}) {
   const file = abs(subpath);
@@ -15,24 +35,32 @@ Object.assign(templateParameters, {
   global,
   inc,
   abs,
+  relativ,
 });
 const methods = {
   buildSource: async function (input, output) {
     const template = await inc(input);
     let source = await require("ejs").render(template, templateParameters, { async: true });
-    try {
-      const beautify = require("js-beautify/js").js;
-      source = beautify(source);
-    } catch (error) {
-      // @OK-
+    if (settings.beautifyDist) {
+      try {
+        const beautify = require("js-beautify/js").js;
+        source = beautify(source);
+      } catch (error) {
+        // @OK-
+        console.log(error);
+      }
     }
+
     console.log(` 🔨 Building «${output}»`);
     await require("fs").promises.writeFile(abs(output), source, "utf8");
   },
-  instrumentSources: async function() {
-    const instrumentation = require(abs("dev/tool/instrument.js"));
-    await instrumentation(require(__dirname + "/test-settings.js").nycOptions);
-    return;
+  instrumentSources: async function () {
+    if (settings.makeCoverage) {
+      const instrumentation = require(abs("dev/tool/instrument.js"));
+      await instrumentation(require(projectRoot + "/looper.settings.js").nycOptions);
+      return true;
+    }
+    return false;
   },
   startTests: function () {
     return require(abs("test/nodejs/test.js"));
@@ -78,4 +106,24 @@ const expect = {
     }
   }
 };
-module.exports = { expect, methods, inc, abs, templateParameters, projectRoot };
+const globsMatch = function (text, globs) {
+  const { minimatch } = require("minimatch");
+  const matches = globs.filter(pattern => {
+    return minimatch(text, pattern);
+  });
+  return matches.length ? matches : null;
+}
+const settings = require(projectRoot + "/looper.settings.js");
+const DevUtils = class {
+  static expect = expect;
+  static methods = methods;
+  static inc = inc;
+  static abs = abs;
+  static relativ = relativ;
+  static templateParameters = templateParameters;
+  static projectRoot = projectRoot;
+  static findProjectRoot = findProjectRoot;
+  static settings = settings;
+  static globsMatch = globsMatch;
+};
+module.exports = DevUtils;

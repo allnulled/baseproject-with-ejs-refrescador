@@ -13,8 +13,8 @@
 
   const ModulerV3 = class ModulerV3 {
     static create = <%-await inc("src/ModulerV3/ModulerV3.create.js")%>;
-    static Definition = <%-await inc("src/ModulerV3/ModulerV3.Definition.js")%>;
-    static Registration = <%-await inc("src/ModulerV3/ModulerV3.Registration.js")%>;
+    static Definition = <%-await inc("src/ModulerV3/Definition.js")%>;
+    static Registration = <%-await inc("src/ModulerV3/Registration.js")%>;
     <%-await inc("src/ModulerV3/ModulerV3.constructor.js")%>
     assert = <%-await inc("src/common/common.assert.js", { owner: "ModuleV3" })%>;
     define = <%-await inc("src/ModulerV3/ModulerV3.prototype.define.js")%>;

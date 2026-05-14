@@ -11,7 +11,7 @@
   }
 })(function () {
 
-  <%-await inc("dist/colors.dist.js")%>
+  
 
   const SpeedObserver = class SpeedObserver {
     static create = <%-await inc("src/SpeedObserver/SpeedObserver.create.js")%>;

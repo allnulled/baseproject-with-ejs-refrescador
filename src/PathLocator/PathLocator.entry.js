@@ -18,6 +18,7 @@ if(typeof PathLocator === "undefined")
     constructor(userBasedir = null) {
       this.basedir = userBasedir ? userBasedir : this.constructor.isNodejs ? process.cwd() : window.location.protocol + "://" + window.location.hostname + ":" + window.location.port + (window.location.path ? ("/" + window.location.path) : "");
     }
+    static hi = function() {console.log("Hi")};
     assert = <%-await inc("src/common/common.assert.js", { owner: "PathLocator" })%>;
     absolute = <%-await inc("src/PathLocator/PathLocator.prototype.absolute.js")%>;
     relative = <%-await inc("src/PathLocator/PathLocator.prototype.relative.js")%>;

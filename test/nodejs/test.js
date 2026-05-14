@@ -1,26 +1,31 @@
-(async function () {
+module.exports = (async function () {
+
   const fs = require("fs");
   const path = require("path");
-  const testUtils = require(__dirname + "/../test-utils.js");
+  const DevUtils = require(__dirname + "/../../dev/dev-utils.js");
   const Colors = require(__dirname + "/../../dist/colors.dist.js");
-  const settings = require(__dirname + "/../test-settings.js");
+  const LooperCli = require(__dirname + "/../../dist/looper-cli.dist.js");
+  const settings = require(__dirname + "/../../looper.settings.js");
   const instrumentalSubpath = settings.makeCoverage ? "dev/coverage/" : "";
-  const { inc, abs } = testUtils;
+  const { inc, abs, relativ } = DevUtils;
   const ModulerV3 = require(__dirname + "/../../" + instrumentalSubpath + "dist/moduler-v3.dist.js");
   const SpeedObserver = require(__dirname + "/../../dist/speed-observer.dist.js");
   const PathLocator = require(__dirname + "/../../" + instrumentalSubpath + "dist/path-locator.dist.js");
-  const matchesTestRules = function (file) {
-    let isSelected = false;
+  const matchesTestRules = function (absfile) {
+    const file = relativ(absfile);
+    let isSelected = "no:default";
     Is_test_selected:
     for (let index = 0; index < settings.testsSelectors.length; index++) {
-      const testRule = settings.testsSelectors[index];
-      if (testRule === "*") isSelected = true;
-      else if (testRule === "!*") isSelected = false;
-      else if (testRule.startsWith("!") && file.includes(testRule.substr(1))) {
-        isSelected = false;
+      const testRule = settings.testsSelectors[index].trim();
+      if (testRule === "*") {
+        isSelected = "yes:*";
+      } else if (testRule === "!*") {
+        isSelected = "no:!*";
+      } else if (testRule.startsWith("!") && file.includes(testRule.substr(1))) {
+        isSelected = "no:" + testRule;
         break Is_test_selected;
       } else if (file.includes(testRule)) {
-        isSelected = true;
+        isSelected = "yes:" + testRule;
         break Is_test_selected;
       }
     }
@@ -32,8 +37,9 @@
     const initDir = new Date();
     const dir = path.resolve(__dirname, settingsDir);
     const dirName = dir.replace(__dirname + "/", "");
-    if (!matchesTestRules(dir)) {
-      console.log(` ❓ Ignoring tests of directory: «${dirName}»`);
+    const dirIgnoreMatch = matchesTestRules(dir);
+    if (dirIgnoreMatch.startsWith("no:")) {
+      console.log(Colors.style("cyan").text(` ❓ Ignoring tests of directory: «${dirName}» due to selector «${dirIgnoreMatch}»`));
       return false;
     }
     console.log(Colors.style("cyan").text(" 🔻 Running collection of tests of directory: ") + dirName);
@@ -48,8 +54,9 @@
       const filepath = path.join(dirName, filename);
       cronoFiles.start();
       if (!file.endsWith(".test.js")) continue Iterating_test_files;
-      if (!matchesTestRules(file)) {
-        console.log(` ❓ Ignoring test: «${filepath}»`);
+      const fileIgnoreMatch = matchesTestRules(file);
+      if (fileIgnoreMatch.startsWith("no:")) {
+        console.log(` ❓ Ignoring test of file: «${filepath}» due to selector «${fileIgnoreMatch}»`);
         continue Iterating_test_files;
       }
       // console.log(` [*] Starting test: «${filepath}»`);
@@ -59,7 +66,15 @@
         ///////////////////////////////////
         ///////////////////////////////////
         const testCallback = require(file);
-        await testCallback({ ModulerV3, SpeedObserver, Colors, PathLocator, settings, testUtils });
+        await testCallback({
+          ModulerV3,
+          SpeedObserver,
+          Colors,
+          PathLocator,
+          settings,
+          DevUtils,
+          LooperCli
+        });
         console.log(Colors.style("greenBright").text(`   ✅ Success: «${filepath}»`));
         status = "ok";
       } catch (error) {
@@ -91,8 +106,10 @@
   const crono1 = SpeedObserver.create();
   const cronos = [];
   let initAll = new Date();
-  for (let index = 0; index < settings.testDirs.length; index++) {
-    const testDir = settings.testDirs[index];
+  const testDirs = (await fs.promises.readdir(__dirname)).filter(f => !f.endsWith(".js") && true);
+  for (let index = 0; index < testDirs.length; index++) {
+    const testDirname = testDirs[index];
+    const testDir = path.resolve(__dirname + "/" + testDirname);
     const { cronoFiles, total } = await evaluarDirectorio(testDir, crono1);
     if (cronoFiles) cronos.push({ dir: testDir, crono: cronoFiles, total });
   }
@@ -124,7 +141,7 @@
     }
     Genera_reporte_de_cobertura:
     if(settings.makeCoverage) {
-      await require(__dirname + "/test-coverage.js");
+      await require(__dirname + "/coverage.js");
     }
   }
 

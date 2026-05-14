@@ -1,4 +1,4 @@
-module.exports = async function({ ModulerV3, SpeedObserver, Colors, settings, testUtils }) {
+module.exports = async function({ ModulerV3, SpeedObserver, Colors, settings, DevUtils }) {
   const moduler = ModulerV3.create(__dirname);
   const expectations = [
     ["defining module only with id should throw", async () => { return await moduler.define({ id: "some-module" }); }, false],
@@ -14,7 +14,7 @@ module.exports = async function({ ModulerV3, SpeedObserver, Colors, settings, te
   ];
   for(let index=0; index<expectations.length; index++) {
     const [reason, callback, isSafe = false] = expectations[index];
-    if(!isSafe) await testUtils.expect.because(reason).toThrowAsync(callback);
-    else await testUtils.expect.because(reason).toNotThrowAsync(callback);
+    if(!isSafe) await DevUtils.expect.because(reason).toThrowAsync(callback);
+    else await DevUtils.expect.because(reason).toNotThrowAsync(callback);
   }
 };

@@ -11,7 +11,7 @@
   }
 })(function () {
   
-  return Object.assign(<%-await inc("src/SpeedObserver/SpeedObserver.colors.js") %>, {
+  return Object.assign(<%-await inc("src/Colors/Colors.original.js") %>, {
     table: <%-await inc("src/Colors/Colors.prototype.table.js") %>,
     borderlessTable: <%-await inc("src/Colors/Colors.prototype.borderlessTable.js") %>,
     padLinesToMax: <%-await inc("src/Colors/Colors.prototype.padLinesToMax.js") %>,

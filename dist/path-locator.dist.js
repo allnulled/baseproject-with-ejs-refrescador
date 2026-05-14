@@ -20,16 +20,21 @@ if (typeof PathLocator === "undefined")
             constructor(userBasedir = null) {
                 this.basedir = userBasedir ? userBasedir : this.constructor.isNodejs ? process.cwd() : window.location.protocol + "://" + window.location.hostname + ":" + window.location.port + (window.location.path ? ("/" + window.location.path) : "");
             }
+            static hi = function() {
+                console.log("Hi")
+            };
             assert = function(condition, message) {
                 if (!condition) throw new Error("assertion error on «PathLocator»: " + message);
             };
             absolute = function(subpath) {
+                this.assert(typeof subpath === "string", "subpath must be string");
                 if (this.constructor.isNodejs) {
                     return require("path").resolve(this.basedir, subpath);
                 }
                 throw new Error("browser does not support PathLocator.prototype.absolute yet");
             };
             relative = function(subpath) {
+                this.assert(typeof subpath === "string", "subpath must be string");
                 if (this.constructor.isNodejs) {
                     return require("path").resolve(this.basedir, subpath).replace(this.basedir, "");
                 }

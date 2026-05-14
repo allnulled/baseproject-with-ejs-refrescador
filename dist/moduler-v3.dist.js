@@ -15,7 +15,7 @@
         static create = function(...args) {
             return new this(...args);
         };
-        static Definition = class {
+        static Definition = class ModulerV3Definition {
             constructor(extra = {}) {
                 Object.assign(this, extra);
                 if (!(typeof extra.moduler === "object")) throw new Error("required «moduler» as object on definition");
@@ -25,7 +25,7 @@
                 if (!condition) throw new Error("assertion error on «ModuleV3.Definition»: " + message);
             };
         };
-        static Registration = class {
+        static Registration = class ModulerV3Registration {
             constructor(definition = {}) {
                 this.assert(typeof definition === "object", "definition must be object");
                 this.assert(definition instanceof ModulerV3.Definition, "definition must be original instance");
@@ -35,8 +35,12 @@
                 if (!condition) throw new Error("assertion error on «ModuleV3.Registration»: " + message);
             };
             commit = async function() {
+                //@doc El Registration.prototype.commit tiene 3 pasos:
+                //@doc Paso 1. _lockProcess: bloquea el proceso de registro
                 await this._lockProcess();
+                //@doc Paso 2. _validateDefineOptions: valida las opciones iniciales del registro
                 await this._validateDefineOptions();
+                //@doc Paso 3. _registerDefinition: registra la definición
                 await this._registerDefinition();
             };
             _lockProcess = function() {
