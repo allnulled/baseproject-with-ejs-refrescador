@@ -7,11 +7,12 @@ module.exports = {
     ["src/LooperCli/LooperCli.entry.js", "dist/looper-cli.dist.js"],
   ],
   testsSelectors: [
-    "*", // todos los tests
+    "!*", // todos los tests
     // Por si quieres ignorar:
     "!performance-metrics",
     "!moduler-v3",
     "!path-locator",
+    "looper-cli"
   ],
   buildExporter: function(entry, { DevUtils }) {
     const filenameSrc = require("path").basename(entry);
@@ -19,7 +20,7 @@ module.exports = {
     const dist = require("path").resolve(DevUtils.projectRoot, "dist", filenameDst);
     return dist;
   },
-  beautifyDist: true,
+  beautifyDist: !true,
   makeCoverage: !true,
   showPerformanceMetrics: true,
   nycOptions: {

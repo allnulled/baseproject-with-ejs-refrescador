@@ -2,105 +2,59 @@ function(schema = {}, argv = [...process.argv].slice(2)) {
   this.assert(typeof schema === "object" && schema !== null, "schema must be object");
   const parsed = { _: [] };
   const aliasMap = {};
+  Collecting_aliases_and_setting_defaults:
   for (const key in schema) {
     const option = schema[key];
     this.assert(typeof option === "object" && option !== null, `schema option '${key}' must be object`);
     this.assert(Array.isArray(option.type), `'${key}.type' must be array`);
-    if (option.alias) {
-      aliasMap[option.alias] = key;
-    }
-    if ("default" in option) {
-      parsed[key] = option.default;
-    } else {
-      parsed[key] = undefined;
-    }
+    if (option.alias) aliasMap[option.alias] = key;
+    if ("default" in option) parsed[key] = option.default;
+    else parsed[key] = undefined;
   }
-  const castSingleValue = (raw, allowedTypes) => {
-    for (const allowedType of allowedTypes) {
-      if (allowedType instanceof LooperCli.type.classes.String) {
-        return String(raw);
-      }
-      if (allowedType instanceof LooperCli.type.classes.Number) {
-        const num = Number(raw);
-        if (!Number.isNaN(num)) {
-          return num;
+  Parsing_arguments:
+  if (Array.isArray(argv)) {
+    let current = "_";
+    Iterating_args:
+    for (let index = 0; index < argv.length; index++) {
+      const arg = argv[index];
+      if (arg.startsWith("--")) {
+        const optionId = arg.substr(2);
+        this.assert(optionId in schema, `unknown option «${arg}» (case 1)`);
+        current = optionId;
+        continue Iterating_args;
+      } else if (arg.startsWith("-")) {
+        const optionId = aliasMap[arg.substr(1)];
+        this.assert(optionId in schema, `unknown short option «${arg}» (case 2)`);
+        this.assert(optionId in schema, `unknown option «${optionId}» (case 3)`);
+        current = optionId;
+        continue Iterating_args;
+      } else {
+        if (current === "_") {
+          parsed._.push(arg);
+          continue Iterating_args;
         }
-      }
-      if (allowedType instanceof LooperCli.type.classes.Boolean) {
-        if (raw === true || raw === "true" || raw === "1") {
-          return true;
+        this.assert(current in schema, `unknown option «${current}» (case 4)`);
+        const validTypes = schema[current].type;
+        const castproxy = { type: undefined, casted: undefined };
+        Iterating_types:
+        for (let indexType = 0; indexType < validTypes.length; indexType++) {
+          const validType = validTypes[indexType];
+          if ((validType instanceof LooperCli.type.classes.String) && (this.isCastableTo(arg, "String", castproxy))) break Iterating_types;
+          else if ((validType instanceof LooperCli.type.classes.Null) && (this.isCastableTo(arg, "Null", castproxy))) break Iterating_types;
+          else if ((validType instanceof LooperCli.type.classes.Boolean) && (this.isCastableTo(arg, "Boolean", castproxy))) break Iterating_types;
+          else if ((validType instanceof LooperCli.type.classes.Number) && (this.isCastableTo(arg, "Number", castproxy))) break Iterating_types;
+          else if ((validType instanceof LooperCli.type.classes.Array) && (this.isCastableTo(arg, "Array", castproxy))) break Iterating_types;
+          else if ((validType instanceof LooperCli.type.classes.Object) && (this.isCastableTo(arg, "Object", castproxy))) break Iterating_types;
+          else if ((validType instanceof LooperCli.type.classes.Constant) && (this.isCastableTo(arg, "Constant", castproxy))) break Iterating_types;
+          else console.log(validType);
         }
-        if (raw === false || raw === "false" || raw === "0") {
-          return false;
-        }
-      }
-      if (allowedType instanceof LooperCli.type.classes.Null) {
-        if (raw === null || raw === "null") {
-          return null;
-        }
-      }
-      if (allowedType instanceof LooperCli.type.classes.Constant) {
-        if (raw === String(allowedType.val)) {
-          return allowedType.val;
-        }
+        this.assert(castproxy.type !== "undefined", `option «${current}» now of type «${typeof arg}» must be one of «${validTypes.map(t => t.constructor.name).join("|")}»`);
+        if (castproxy.type === "Array") parsed[current].push(castproxy.casted);
+        else parsed[current] = castproxy.casted;
       }
     }
-    throw new Error(`Cannot cast value '${raw}'`);
-  };
-  const isArrayType = (option) => {
-    return option.type.some(t =>t instanceof LooperCli.type.classes.Array);
-  };
-  const filteredTypes = (option) => {
-    const types = option.type.filter(t =>!(t instanceof LooperCli.type.classes.Array));
-    // Array() => Array<String>
-    if (types.length === 0) {
-      return [LooperCli.type.String()];
-    }
-    return types;
-  };
-  let positionalMode = false;
-  for (let i = 0; i < argv.length; i++) {
-    const token = argv[i];
-    if (token === "--") {
-      positionalMode = true;
-      continue;
-    }
-    if (positionalMode || !token.startsWith("-")) {
-      parsed._.push(token);
-      continue;
-    }
-    let name;
-    if (token.startsWith("--")) {
-      name = token.slice(2);
-      this.assert(name in schema, `Unknown option '--${name}'`);
-    } else {
-      const alias = token.slice(1);
-      this.assert(alias in aliasMap, `Unknown alias '-${alias}'`);
-      name = aliasMap[alias];
-    }
-    const option = schema[name];
-    const isBooleanOnly =option.type.length === 1 &&option.type[0] instanceof LooperCli.type.classes.Boolean;
-    if (isBooleanOnly) {
-      parsed[name] = true;
-      continue;
-    }
-    // ARRAY
-    if (isArrayType(option)) {
-      parsed[name] = [];
-      while (i + 1 < argv.length) {
-        const next = argv[i + 1];
-        if (next.startsWith("-")) {
-          break;
-        }
-        i++;
-        parsed[name].push(castSingleValue(next,filteredTypes(option)));
-      }
-      continue;
-    }
-    // SINGLE VALUE
-    const next = argv[++i];
-    this.assert(next !== undefined,`Missing value for '${token}'`);
-    parsed[name] = castSingleValue(next,filteredTypes(option));
-  }
+  } else if (typeof argv === "object") {
+    Object.assign(parsed, argv);
+  } else throw new Error("parameter «argv» must be array or object");
   return parsed;
 }

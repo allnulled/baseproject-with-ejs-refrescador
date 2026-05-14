@@ -40,3 +40,4 @@ moduler-v3.dist.js
 - `test/test-settings.js`
    - algunas configuraciones de los tests
 - `test/test-settings.js`
+
