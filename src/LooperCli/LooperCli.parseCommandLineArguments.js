@@ -1,13 +1,17 @@
-function(schema = {}, argv = [...process.argv].splice(2)) {
+function(schema = {}, argvInput = null) {
   this.assert(typeof schema === "object" && schema !== null, "schema must be object");
   this.assert(!Array.isArray(schema), "schema must be object but not array");
+  this.assert((typeof argvInput === "object") && (argvInput !== null), "argv must be array or object");
+  const argv = argvInput === null ? [...process.argv].splice(2) : argvInput;
+  const isCommandLineArgv = Array.isArray(argv);
   const parsed = { _: [] };
   const aliasMap = {};
+  const typeClasses = LooperCli.type.classes;
   Collecting_aliases_and_setting_defaults:
   for (const key in schema) {
     const option = schema[key];
-    this.assert(typeof option === "object" && option !== null, `schema option '${key}' must be object`);
-    this.assert(Array.isArray(option.type), `'${key}.type' must be array`);
+    this.assert(typeof option === "object" && option !== null, `«schema.${key}» must be object`);
+    if(isCommandLineArgv) this.assert(Array.isArray(option.type), `«schema.${key}.type» must be array`);
     if (option.alias) aliasMap[option.alias] = key;
     if ("default" in option) parsed[key] = option.default;
     else parsed[key] = undefined;
@@ -36,7 +40,6 @@ function(schema = {}, argv = [...process.argv].splice(2)) {
         }
         this.assert(current in schema, `unknown option «${current}» (case 4)`);
         const validTypes = schema[current].type;
-        const typeClasses = LooperCli.type.classes;
         const castproxy = { type: undefined, casted: undefined };
         Iterating_types:
         for (let indexType = 0; indexType < validTypes.length; indexType++) {
@@ -58,5 +61,14 @@ function(schema = {}, argv = [...process.argv].splice(2)) {
   } else if (typeof argv === "object") {
     Object.assign(parsed, argv);
   } else throw new Error("parameter «argv» must be array or object");
+  Validating_parsed_arguments_types: 
+  for(let key in parsed) {
+    if(key === "_") {
+      continue Validating_parsed_arguments_types;
+    }
+    this.assert(key in schema, `unknown property «${key}» provided`);
+    const val = parsed[key];
+
+  }
   return parsed;
 }

@@ -1,8 +1,4 @@
-async function(options) {
-  const definition = new ModulerV3.Definition({
-    moduler: this,
-    ...options,
-  });
-  const registration = new ModulerV3.Registration(definition);
-  await registration.commit();
+function(options) {
+  const definition = ModulerV3.Definition.create(options);
+  return ModulerV3.Registration.create(definition).commit();
 }

@@ -1,18 +1,18 @@
 module.exports = {
   buildTargets: [
-    ["src/Colors/Colors.entry.js", "dist/colors.dist.js"],
+    // ["src/Colors/Colors.entry.js", "dist/colors.dist.js"],
     ["src/ModulerV3/ModulerV3.entry.js", "dist/moduler-v3.dist.js"],
-    ["src/SpeedObserver/SpeedObserver.entry.js", "dist/speed-observer.dist.js"],
-    ["src/PathLocator/PathLocator.entry.js", "dist/path-locator.dist.js"],
-    ["src/LooperCli/LooperCli.entry.js", "dist/looper-cli.dist.js"],
+    // ["src/SpeedObserver/SpeedObserver.entry.js", "dist/speed-observer.dist.js"],
+    // ["src/PathLocator/PathLocator.entry.js", "dist/path-locator.dist.js"],
+    // ["src/LooperCli/LooperCli.entry.js", "dist/looper-cli.dist.js"],
   ],
   testsSelectors: [
     "!*", // todos los tests
     // Por si quieres ignorar:
     "!performance-metrics",
     "moduler-v3",
-    "path-locator",
-    "looper-cli"
+    "!path-locator",
+    "!looper-cli"
   ],
   buildExporter: function(entry, { DevUtils }) {
     const filenameSrc = require("path").basename(entry);
@@ -21,7 +21,7 @@ module.exports = {
     return dist;
   },
   beautifyDist: true,
-  makeCoverage: true,
+  makeCoverage: !true,
   showPerformanceMetrics: true,
   nycOptions: {
     exclude: [

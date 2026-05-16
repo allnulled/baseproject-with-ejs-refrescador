@@ -2,7 +2,8 @@ async function dispatch(argv = [...process.argv].splice(2)) {
   const fs = require("fs");
   const path = require("path");
   this.assert(typeof argv === "object", `parameter «argv» must be object`);
-  const args = Array.isArray(argv) ? LooperCli.parseCommandLineArguments(this.schema.original, argv) : argv;
+  // const args = Array.isArray(argv) ? LooperCli.parseCommandLineArguments(this.schema.original, argv) : argv;
+  const args = LooperCli.parseCommandLineArguments(this.schema.original, argv);
   const commandRel = path.join(args._.join("/"), "command.js");
   const commandPath = path.resolve(this.basedir, commandRel);
   Comprobar_que_hay_comando: {

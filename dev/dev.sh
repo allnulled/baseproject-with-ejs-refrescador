@@ -1,13 +1,14 @@
 #!/usr/bin/bash
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DIR2="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-cd "$DIR"
+cd "$DIR2"
 cd ..
 
+pwd > cwd.txt
 # -x 'node dev/build.js @{refrescador.file}' \
 
-refrescador \
+/usr/bin/refrescador \
     -w "$(pwd)" \
     -i "**/node_modules/**/*" \
     -i "**/dist/**/*" \
