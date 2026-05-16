@@ -43,4 +43,4 @@ moduler-v3.dist.js
 
 # Documentación derivada
 
-- [001. Programación Orientada a Objetos Funcionales.md](https://github.com/allnulled/baseproject-with-ejs-refrescador/blob/main/001.%20Programación%20Orientada%20a%20Objetos%20Funcionales.md)
+- [001. Programación Orientada a Objetos Funcionales.md](https://github.com/allnulled/baseproject-with-ejs-refrescador/blob/main/guides/001.%20Programación%20Orientada%20a%20Objetos%20Funcionales.md)
