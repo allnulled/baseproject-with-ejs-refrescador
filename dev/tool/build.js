@@ -11,5 +11,6 @@ module.exports = async function (files = process.argv.splice(2)) {
     await Promise.all(builders);
   }
   await methods.instrumentSources();
+  await methods.makeExportations();
   await methods.startTests();
 };

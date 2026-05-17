@@ -8,7 +8,9 @@
     "dev": "bash dev/dev.sh",
     "devtool": "node dev/tool.js",
     "devtool:instrument": "node dev/tool.js instrument",
-    "devtool:document": "node dev/tool.js document"
+    "devtool:document": "node dev/tool.js document",
+    "devtool:build": "node dev/tool.js build",
+    "devtool:export": "node dev/tool.js export"
   },
   "keywords": [],
   "author": "allnulled",

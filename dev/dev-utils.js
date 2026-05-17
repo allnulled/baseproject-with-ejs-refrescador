@@ -17,6 +17,7 @@ const findProjectRoot = function (file = "looper.settings.js") {
   return null;
 };
 const projectRoot = findProjectRoot();
+const settings = require(projectRoot + "/looper.settings.js");
 const abs = function (subpath) {
   return require("path").resolve(projectRoot, subpath);
 };
@@ -28,6 +29,10 @@ const inc = async function (subpath, callParameters = {}) {
   const content = await require("fs").promises.readFile(file, "utf8");
   return await require("ejs").render(content, { ...templateParameters, ...callParameters }, { async: true });
 };
+const startDevtool = function(subpath, parameters = []) {
+  const callback = require(__dirname + "/tool/" + subpath + ".js");
+  return callback(parameters);
+};
 Object.assign(templateParameters, {
   require,
   process,
@@ -36,6 +41,8 @@ Object.assign(templateParameters, {
   inc,
   abs,
   relativ,
+  startDevtool,
+  settings,
 });
 const methods = {
   buildSource: async function (input, output) {
@@ -50,14 +57,16 @@ const methods = {
         console.log(error);
       }
     }
-
     console.log(` 🔨 Building «${output}»`);
     await require("fs").promises.writeFile(abs(output), source, "utf8");
+  },
+  makeExportations: async function() {
+    return startDevtool("export");
   },
   instrumentSources: async function () {
     if (settings.makeCoverage) {
       const instrumentation = require(abs("dev/tool/instrument.js"));
-      await instrumentation(require(projectRoot + "/looper.settings.js").nycOptions);
+      await instrumentation(settings.nycOptions);
       return true;
     }
     return false;
@@ -113,7 +122,6 @@ const globsMatch = function (text, globs) {
   });
   return matches.length ? matches : null;
 }
-const settings = require(projectRoot + "/looper.settings.js");
 const DevUtils = class {
   static expect = expect;
   static methods = methods;
@@ -125,5 +133,6 @@ const DevUtils = class {
   static findProjectRoot = findProjectRoot;
   static settings = settings;
   static globsMatch = globsMatch;
+  static startDevtool = startDevtool;
 };
 module.exports = DevUtils;

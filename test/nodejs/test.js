@@ -2,14 +2,41 @@ module.exports = (async function () {
 
   const fs = require("fs");
   const path = require("path");
+  const NYC = require("nyc");
   const settings = require(__dirname + "/../../looper.settings.js");
   const instrumentalSubpath = settings.makeCoverage ? "dev/coverage/" : "";
+  const nyc = new NYC({
+    cwd: __dirname + "/../..",
+    tempDirectory: ".nyc_output",
+    ...settings.nycOptions,
+  });
+  const getInstrumentalSubpathOf = function(pref, suff) {
+    const path1 = path.resolve(pref + suff);
+    const itShould = nyc.exclude.shouldInstrument(path1);
+    let output = path1;
+    if (itShould) {
+      output = path.resolve(pref + instrumentalSubpath + suff);
+    }
+    return output;
+  };
+  const requireInstrumentalSubpathOf = async function(pref, suff) {
+    const instrumentalSub1 = getInstrumentalSubpathOf(pref, suff);
+    try {
+      fs.readFileSync(instrumentalSub1, "utf8");
+      return require(instrumentalSub1);
+    } catch (error) {
+      if(error.code === "ENOENT") {
+        return require(pref + suff);
+      }
+      throw error;
+    }
+  };
   const DevUtils = require(__dirname + "/../../dev/dev-utils.js");
-  const Colors = require(`${__dirname}/../../${instrumentalSubpath}dist/colors.dist.js`);
-  const LooperCli = require(`${__dirname}/../../${instrumentalSubpath}dist/looper-cli.dist.js`);
-  const ModulerV3 = require(`${__dirname}/../../${instrumentalSubpath}dist/moduler-v3.dist.js`);
-  const SpeedObserver = require(`${__dirname}/../../${instrumentalSubpath}dist/speed-observer.dist.js`);
-  const PathLocator = require(`${__dirname}/../../${instrumentalSubpath}dist/path-locator.dist.js`);
+  const Colors = await requireInstrumentalSubpathOf(__dirname + "/../../", "dist/colors.dist.js");
+  const LooperCli = await requireInstrumentalSubpathOf(__dirname + "/../../", "dist/looper-cli.dist.js");
+  const ModulerV3 = await requireInstrumentalSubpathOf(__dirname + "/../../", "dist/moduler-v3.dist.js");
+  const SpeedObserver = await requireInstrumentalSubpathOf(__dirname + "/../../", "dist/speed-observer.dist.js");
+  const PathLocator = await requireInstrumentalSubpathOf(__dirname + "/../../", "dist/path-locator.dist.js");
   const { inc, abs, relativ } = DevUtils;
   const matchesTestRules = function (absfile) {
     const file = relativ(absfile);
@@ -39,10 +66,10 @@ module.exports = (async function () {
     const dirName = dir.replace(__dirname + "/", "");
     const dirIgnoreMatch = matchesTestRules(dir);
     if (dirIgnoreMatch.startsWith("no:")) {
-      console.log(Colors.style("cyan").text(` ❓ Ignoring tests of directory: «${dirName}» due to selector «${dirIgnoreMatch}»`));
+      // console.log(Colors.style("cyan").text(` ▫️ Ignoring tests of directory: «${dirName}» due to selector «${dirIgnoreMatch}»`));
       return false;
     }
-    console.log(Colors.style("cyan").text(" 🔻 Running collection of tests of directory: ") + dirName);
+    console.log(Colors.style("cyan").text(" 🔻✅🧪 Running collection of tests of directory: ") + dirName);
     const files = await fs.promises.readdir(dir);
     const errors = [];
     const cronoFiles = SpeedObserver.create();
@@ -56,7 +83,7 @@ module.exports = (async function () {
       if (!file.endsWith(".test.js")) continue Iterating_test_files;
       const fileIgnoreMatch = matchesTestRules(file);
       if (fileIgnoreMatch.startsWith("no:")) {
-        console.log(` ❓ Ignoring test of file: «${filepath}» due to selector «${fileIgnoreMatch}»`);
+        // console.log(` ▫️ Ignoring test of file: «${filepath}» due to selector «${fileIgnoreMatch}»`);
         continue Iterating_test_files;
       }
       // console.log(` [*] Starting test: «${filepath}»`);

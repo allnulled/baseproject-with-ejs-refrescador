@@ -16,10 +16,10 @@ function(testResults, totalMs) {
       ]);
     }
   }
-  console.log(SpeedObserver.colors.style("cyan").text(" 🔻⏳📐 Test performance metrics:"));
+  console.log(SpeedObserver.colors.style("cyan").text(" 🔻⏳📐 Showing test performance metrics:"));
   console.log(SpeedObserver.colors.borderlessTable([
     // [{ colSpan: 4, content: "Times" }]
-    ["   ⏳ Time", "Status", "File", "Duration"],
+    // ["   ⏳ Time", "Status", "File", "Duration"],
   ].concat(rows), {
     style: {
       border: ["yellow"],

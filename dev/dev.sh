@@ -12,6 +12,7 @@ pwd > cwd.txt
     -w "$(pwd)" \
     -i "**/node_modules/**/*" \
     -i "**/dist/**/*" \
+    -i "**/*.dist.*" \
     -i "**/coverage/**/*" \
     -i "**/.nyc_output/**/*" \
     -i "**/dist-instrumented/**/*" \

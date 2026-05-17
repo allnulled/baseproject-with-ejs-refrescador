@@ -1,5 +1,7 @@
-function(options) {
-  return ModulerV3.Meaning.of(options);
+(options) {
+  this._trace("mean", arguments, 1);
+  const definition = await this.define(options);
+  return await this._loadDefinition(definition);
   Si_es_string:
   if (typeof options === "id") {
     Devolver_cacheado_si_escaece:
