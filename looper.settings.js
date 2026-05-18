@@ -24,7 +24,9 @@ module.exports = {
   isTracing: !true,
   beautifyDist: true,
   makeCoverage: !true,
-  showPerformanceMetrics: true,
+  showPerformanceMetrics: !true,
+  showTestProgress: !true,
+  
   nycOptions: {
     exclude: [
       //*

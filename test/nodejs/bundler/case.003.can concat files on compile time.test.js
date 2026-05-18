@@ -26,7 +26,7 @@ module.exports = async function ({ ModulerV3 }) {
   console.log(bundle.moduler.definitions);
   moduler.assert(Object.keys(bundle.moduler.definitions).length === 5, "bundler no ha registrado los módulos en test de «concat files on compile time» (punto 1)");
   await bundle.write({
-    outFile: "something.whatever"
+    outFile: "case.003.output-1.dist.js"
   })
   /*
   console.log(bundle);

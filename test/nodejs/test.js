@@ -3,6 +3,7 @@ module.exports = (async function () {
   const fs = require("fs");
   const path = require("path");
   const NYC = require("nyc");
+  const TestUtil = require(__dirname + "/TestUtil.js");
   const settings = require(__dirname + "/../../looper.settings.js");
   const instrumentalSubpath = settings.makeCoverage ? "dev/coverage/" : "";
   const nyc = new NYC({
@@ -69,7 +70,7 @@ module.exports = (async function () {
       // console.log(Colors.style("cyan").text(` ▫️ Ignoring tests of directory: «${dirName}» due to selector «${dirIgnoreMatch}»`));
       return false;
     }
-    console.log(Colors.style("cyan").text(" 🔻✅🧪 Running collection of tests of directory: ") + dirName);
+    if(settings.showTestProgress) console.log(Colors.style("cyan").text(" 🔻✅🧪 Running collection of tests of directory: ") + dirName);
     const files = await fs.promises.readdir(dir);
     const errors = [];
     const cronoFiles = SpeedObserver.create();
@@ -102,7 +103,7 @@ module.exports = (async function () {
           DevUtils,
           LooperCli
         });
-        console.log(Colors.style("greenBright").text(`   ✅ Success: «${filepath}»`));
+        if(settings.showTestProgress) console.log(Colors.style("greenBright").text(`   ✅ Success: «${filepath}»`));
         status = "ok";
       } catch (error) {
         status = "failed";
@@ -120,9 +121,10 @@ module.exports = (async function () {
       let errorMessage = "";
       errorMessage += Colors.style("red,bold").text(`   ⛔️⛔️ Failed collection of tests of «${dirName}» with «${errors.length}» errors`);
       console.log(errorMessage);
+      TestUtil.debugErrors(errors);
     } else {
       localStatus = "ok";
-      console.log(Colors.style("greenBright,bold").text(`   ✅✅ Succeded collection of tests of «${dirName}».`));
+      if(settings.showTestProgress) console.log(Colors.style("greenBright,bold").text(`   ✅✅ Succeded collection of tests of «${dirName}».`));
     }
     crono1.save(`Collection «${settingsDir}»`, { status: localStatus });
     const total = (new Date()).getTime() - initDir.getTime();

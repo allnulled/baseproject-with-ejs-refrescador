@@ -65,7 +65,7 @@
     return {
       text: (text) => {
         const begin = styles.reduce((out, it) => {
-          if(!(it in this.available)) {
+          if (!(it in this.available)) {
             return out;
           }
           const code = this.available[it];
@@ -77,15 +77,18 @@
       }
     }
   },
-  stripAnsi: function(str) {
+  stripAnsi: function (str) {
     return str.replace(/\x1b\[[0-9;]*m/g, "");
   },
-  box: function(text, style = "") {
-    const lines = text.split("\n").filter(l => !!l.length);
+  wrapAnsi: function (str, maxWidth) {
+    return require("wrap-ansi").default(str, maxWidth, { hard: true });
+  },
+  box: function (text, maxWidth = 110) {
+    const lines = this.wrapAnsi(text, maxWidth).split("\n");
     const cleanLines = lines.map(l => this.stripAnsi(l));
     const width = Math.max(...cleanLines.map(l => l.length));
-    const top = "┌" + "─".repeat(width + 3) + "┐";
-    const bottom = "└" + "─".repeat(width + 3) + "┘";
+    const top = "┌" + "─".repeat(width + 2) + "┐";
+    const bottom = "└" + "─".repeat(width + 2) + "┘";
     const body = lines
       .map(line => {
         const clean = this.stripAnsi(line);

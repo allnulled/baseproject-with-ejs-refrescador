@@ -261,7 +261,10 @@
                 this._trace("constructor");
                 this.assert(typeof moduler === "object", "required «moduler» as object");
                 this.assert(moduler instanceof ModulerV3, "required «moduler» as instance of ModulerV3");
+                this._state = "available";
                 this.moduler = moduler;
+                this.basedir = moduler.basedir;
+                this.analysis = {};
             }
             _isTracing = false;
             _trace(method, args = [], debug = 0) {
@@ -280,13 +283,80 @@
             assert(condition, message) {
                 if (!condition) throw new Error("assertion error on «ModuleV3.BundleWriter»: " + message);
             };
-            async write(optionsInput = {}) {
+            async write(optionsUser = {}) {
                 this._trace("prototype.write");
-                this.assert(typeof optionsInput === "object", "required «options» as object");
-                const options = Object.assign({}, BundleWriter._defaultOptions, optionsInput);
+                this.assert(typeof optionsUser === "object", "required «options» as object");
+                const options = Object.assign({}, BundleWriter._defaultOptions, optionsUser);
                 const toFile = typeof options.outFile === "string";
                 const toDir = typeof options.outDir === "string"
                 this.assert(toFile || toDir, "required «options.outFile» or «options.outDir» as string");
+                this._block();
+                await this._analyze(options);
+                await this._persist(options);
+                this._close();
+            };
+            async _analyze(options) {
+                this._trace("prototype._analyze");
+                // Reset analysis:
+                this._analysis = {
+                    js: {
+                        output: "",
+                        blocks: [],
+                    },
+                };
+                // Get definitions by order:
+                const allBlocks = this._analysis.js.blocks = Object.values(this.moduler.definitions).sort(function(a, b) {
+                    return a.$order <= b.$order ? -1 : 1;
+                });
+                let js = "";
+                for (let indexBlock = 0; indexBlock < allBlocks.length; indexBlock++) {
+                    js += this._wrapInAsyncCall(allBlocks[indexBlock].$source);
+                }
+                this._analysis.js.output = this._beautify(js);
+
+            };
+            async _persist(options) {
+                this._trace("prototype._persist");
+                const source = this._analysis.js.output;
+                const filepath = this.fullpath(options.outFile);
+                await require("fs").promises.writeFile(filepath, source, "utf8");
+            };
+            _block(force = false) {
+                this._trace("prototype._block");
+                if (!force) {
+                    this.assert(this._state === "available", "BundleWriter instance is busy right now");
+                }
+                this._state = "blocked";
+            };
+            _close(force = false) {
+                this._trace("prototype._unblock");
+                if (!force) {
+                    this.assert(this._state !== "available", "BundleWriter instance is already available");
+                }
+                this._state = "available";
+            };
+            _wrapInAsyncCall(code) {
+                this._trace("prototype._wrapInAsyncCall");
+                let js = "";
+                js += `(async function() {\n`;
+                js += `  ${code}\n`;
+                js += `})();\n`;
+                return js;
+            };
+            _beautify(code) {
+                this._trace("prototype._beautify");
+                try {
+                    const beautify = require("js-beautify/js").js;
+                    const output = beautify(code);
+                    return output;
+                } catch (error) {
+                    console.error(error);
+                    return code;
+                }
+            };
+            fullpath(subpath) {
+                this._trace("fullpath", arguments, 2);
+                return require("path").resolve(this.basedir, subpath);
             };
         };
         constructor(basedirInput = null, settings = {}) {
