@@ -1,9 +1,11 @@
-(original, args = {}) {
-  const source = await this._injectSource(original);
-  const keys = Object.keys(args);
-  const values = Object.values(args);
-  const safeSource = this._wrapInTryCatch(source);
-  const asyncCallback = new ((async function() {}).constructor)(...keys, safeSource);
-  // console.log(source);
-  return await asyncCallback(...values);
+($_EVALUATION_ORIGINAL_SOURCE, $_EVALUATION_CALLBACK_ARGUMENTS = {}, $_MAKE_AS_ASYNC_FUNCTION = false) {
+  const $_EVALUATION_PRODUCED_SOURCE = await this._injectSource($_EVALUATION_ORIGINAL_SOURCE);
+  const $_EVALUATION_CALLBACK_ARGUMENT_KEYS = Object.keys($_EVALUATION_CALLBACK_ARGUMENTS);
+  const $_EVALUATION_SAFE_SOURCE = this._wrapInTryCatch($_EVALUATION_PRODUCED_SOURCE);
+  if($_MAKE_AS_ASYNC_FUNCTION) {
+    const $_EVALUATION_ASYNC_CALLBACK = new ((async function() {}).constructor)(...$_EVALUATION_CALLBACK_ARGUMENT_KEYS, $_EVALUATION_SAFE_SOURCE);
+    return $_EVALUATION_ASYNC_CALLBACK(...Object.values($_EVALUATION_CALLBACK_ARGUMENTS));
+  } else {
+    return eval(this._wrapInAsyncCall(this._destructureObjectToJs($_EVALUATION_CALLBACK_ARGUMENTS, "$_EVALUATION_CALLBACK_ARGUMENTS") + $_EVALUATION_SAFE_SOURCE));
+  }
 }

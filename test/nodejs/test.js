@@ -133,10 +133,13 @@ module.exports = (async function () {
   const crono1 = SpeedObserver.create();
   const cronos = [];
   let initAll = new Date();
-  const testDirs = (await fs.promises.readdir(__dirname)).filter(f => !f.endsWith(".js") && true);
+  const testDirs = (await fs.promises.readdir(__dirname, { withFileTypes: true })).filter(f => {
+    return f.isDirectory() && true;
+  }).map(f => path.resolve(f.path, f.name));
+  console.log(testDirs.map((dir,indexTest) => `   ▫️ ${indexTest+1}. ${dir}`).join("\n"));
   for (let index = 0; index < testDirs.length; index++) {
-    const testDirname = testDirs[index];
-    const testDir = path.resolve(__dirname + "/" + testDirname);
+    const testDir = testDirs[index];
+    const testDirname = testDir.replace(__dirname + "/", "");
     const { cronoFiles, total } = await evaluarDirectorio(testDir, crono1);
     if (cronoFiles) cronos.push({ dir: testDir, crono: cronoFiles, total });
   }

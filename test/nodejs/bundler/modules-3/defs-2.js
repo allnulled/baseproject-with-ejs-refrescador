@@ -1,5 +1,5 @@
 return define({
-  name: "two",
-  uses: [{ name: "one" }],
+  as: "two",
+  uses: [],
   factory: one => one + one
 });

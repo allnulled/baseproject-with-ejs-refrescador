@@ -1,0 +1,145 @@
+[??/05/2026]
+
+- Nuevos:
+   - 🔴 Soporte para CSS
+   - 🔴 Soporte para TS
+- Sources:
+   - 🔴 Soporte para HTML con inject.source.string
+   - 🔴 Soporte para EJS con inject.source.template
+- Files:
+   - 🔴 Soporte para ficheros JS explícito con inject.file
+   - 🔴 Soporte para ficheros EJS explícito con inject.file.template
+   - 🔴 Soporte para ficheros HTML explícito con inject.file.string
+- URLs:
+   - 🔴 Soporte para urls JS explícito con inject.url
+   - 🔴 Soporte para urls EJS explícito con inject.url.template
+   - 🔴 Soporte para urls HTML explícito con inject.url.string
+
+[??/05/2026]
+
+- 🔴🔴 FileWatcher.js
+- 🔴🔴 onTouch.js y touch.js
+- 🔴🔴 LooperCli
+
+- 🔴 FileWatcher que pueda:
+   - 🔴 Reaccionar a eventos de ficheros
+   - 🔴 Triggear un touch.js que use refrescador en node.js
+- 🔴 Nuevo parámetro en refrescador: -jf o --javascript-file
+   - 🔴 Para lanzar un callback pero sin salir de node.js
+   - 🔴 Habrá que mirar la caché
+      - 🔴 Si se complica mucho, se deja ahí pero no se usa y ya está
+- 🔴 Del FileWatcher saltamos al onTouch.js y touch.js:
+   - 🔴 El onTouch.js tiene el evento de reacción:
+      - 🔴 Es el que usa refrescador en el -jf
+   - 🔴 El touch.js tiene el método de reacción:
+      - 🔴 Es el que usa onTouch.js
+      - 🔴 Exporta una función que se puede usar contra ficheros
+      - 🔴 El touch.js representa un evento de tocar un fichero, y tiene que:
+         - 🔴 Soportar semáforos por bloquear/desbloquear/bypasear (segundo parámetro del touch.js)
+         - 🔴 Discriminar a ciegas lo que tiene que hacer con cada fichero
+            - 🔴 Soportar un contexto para hacer distintas cosas según este (tercer parémtro del touch.js)
+         - 🔴 Desbloquear semáforo al salir
+- 🔴 Del onTouch.js saltamos al LooperCli, y tiene que:
+   - 🔴 Poder encontrar la raíz del proyecto según el pwd
+   - 🔴 Poder encontrar la raíz de los comandos del proyecto
+   - 🔴 Poder ejecutar los comandos del proyecto
+      - 🔴 Vía API con LooperCli.prototype
+         - 🔴 Con soporte paralelo de parámetros objetuales y no listales
+      - 🔴 Vía CLI con LooperCli.prototype.dispatch
+- 🔴 Del LooperCli saltamos al LooperToolkit, y tiene que:
+   - 🔴 Agrupar todas las APIs anteriores en 1 solo fichero
+   - 🔴 Cargar las APIs con un if anterior en cada una para cargar solo si no existen ya
+      - 🔴 Y permitir que el módulo sea reusable
+- 🔴 Del LooperToolkit como clase saltamos al looper-v1-boilerplate, y tiene que:
+   - 🔴 Ser una alternativa de desarrollo rápido en JS
+   - 🔴 Soportar múltiples proyectos
+      - 🔴 Que el segundo nivel /project/${aqui} sea para los distintos proyectos
+      - 🔴 Que cada proyecto tenga su propio /looper.settings.js
+      - 🔴 Que cada proyecto tenga su propio /package.json
+      - 🔴 Que todos los proyectos compartan un package.json + node_modules
+         - 🔴 Y ahorrar espacio en dependencias duplicadas
+   - 🔴 Soportar módulos inyectables y remotables
+   - 🔴 Ofrecer un loop con las siguientes características:
+      - 🔴 Loop limpio, sin muchos ficheros y carpetas
+      - 🔴 Loop personalizable, sin historias raras
+      - 🔴 Loop provisto de los comandos más básicos
+         - 🔴 Con procesos globales del proyecto:
+            - 🔴 looper process/touch fichero.js
+            - 🔴 looper process/build fichero.js
+            - 🔴 looper process/test fichero.js
+            - 🔴 looper process/dev fichero.js
+         - 🔴 Con comandos targeteables contra ficheros:
+            - 🔴 looper command/touch fichero.js
+            - 🔴 looper command/build fichero.js
+            - 🔴 looper command/build/module fichero.js
+            - 🔴 looper command/build/typescript fichero.js
+            - 🔴 looper command/build/css fichero.css
+            - 🔴 looper command/test fichero.js
+            - 🔴 looper command/pack fichero.js
+            - 🔴 looper command/call fichero.js
+- 🔴 Del looper-v1-boilerplate saltamos al primer proyecto con looper, donde encontramos:
+   - 🔴 /dev/looper/autoload.js
+   - 🔴 /dev/looper/task.js
+   - 🔴 /dev/looper/task/onTouch.js
+   - 🔴 /dev/looper/task/touch.js
+   - 🔴 /dev/looper/task/build.js
+   - 🔴 /dev/looper/task/test.js
+   - 🔴 /dev/looper/task/dev.js
+   - 🔴 /dev/looper/util.js
+   - 🔴 /dev/looper/util/touch.js
+   - 🔴 /dev/looper/util/build.js
+   - 🔴 /dev/looper/util/build/module.js
+   - 🔴 /dev/looper/util/build/typescript.js
+   - 🔴 /dev/looper/util/build/css.js
+   - 🔴 Se puede usar así:
+      - 🔴 looper task onTouch
+      - 🔴 looper task touch
+      - 🔴 looper task build
+      - 🔴 looper task test
+      - 🔴 looper task dev
+      - 🔴 looper util touch
+      - 🔴 looper util build
+      - 🔴 looper util build module
+      - 🔴 looper util build typescript
+      - 🔴 looper util build css
+   - 🔴 Se puede usar así también:
+      - 🔴 looper task/onTouch
+      - 🔴 looper task/touch
+      - 🔴 looper task/build
+      - 🔴 looper task/test
+      - 🔴 looper task/dev
+   - 🔴 El truco está el los dev/looper/task.js y dev/looper/utils.js
+      - 🔴 Porque ya saben cómo van a usar los posicionales
+      - 🔴 Pero pierdes los posicionales en todos los tasks y los util
+         - 🔴 Cosa que se espera que sea así
+         - 🔴 Es decir, es correcto no aceptar posicionales
+         - 🔴 Porque en la API real nunca pasas: {_:["fichero1.txt", "fichero2.txt"]} sino {files:["f1.txt","f2.txt"]}
+- 🔴 Luego tiene más carpetas como:
+   - 🔴 /dev/...
+   - 🔴 /dev/documentation/...
+   - 🔴 /dev/coverage/...
+   - 🔴 /dev/looper/...
+   - 🔴 /dev/looper/task/...
+   - 🔴 /dev/looper/util/...
+   - 🔴 /dist/${ruta/a/distribuible}.js
+   - 🔴 /src/${ruta/a/source}.js
+   - 🔴 /test/
+   - 🔴 /test/unit/${ruta/a/test}.test.js
+   - 🔴 /test/user/${custom}.test.js
+   - 🔴 /test/
+- 🔴 El looper task dev entonces tiene que, además de tener todo esto cargable, también:
+   - 🔴 Mirar si hay un looper.settings.js por encima
+   - 🔴 Mirar si hay un .entry.js por encima
+      - 🔴 Esto todavía no lo tengo muy claro
+      - 🔴 De haberlo, se compilaría con `looper util build --file tal.js --force true`
+   - 🔴 Mirar si hay un onTouch.js por encima
+      - 🔴 De haberlo, se carga y se llama pasándole el contexto
+      - 🔴 Esto se hace después de las compilaciones reglamentarias
+   - 🔴 Las compilaciones desde dentro del loop se saltan el semáforo automático
+      - 🔴 Esto es con --force true o {...tal, force: true}
+   - 🔴 Crea automáticamente un test por cada .js en: test/unit/*
+   - 🔴 Crea automáticamente un dist por cada .entry.js en: dist/*
+   - 🔴 Crea automáticamente la documentación en dev/documentation
+      - 🔴 Simplemente unifica todo en un markdown
+      - 🔴 No hace falta pasarlo a HTML de momento
+   - 🔴 Crea automáticamente la cobertura de código en dev/coverage

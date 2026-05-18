@@ -4,4 +4,5 @@ constructor(basedirInput = null, settings = {}) {
   this.basedir = basedir;
   this.definitions = {};
   this.settings = settings;
+  this.counter = 0;
 }

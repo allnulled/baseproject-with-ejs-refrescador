@@ -1,4 +1,4 @@
 return define({
-  name: "one",
+  as: "one",
   module: 1
 });

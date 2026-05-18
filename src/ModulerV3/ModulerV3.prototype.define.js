@@ -5,8 +5,4 @@
   this._validateType(definition);
   this._validateNontype(definition);
   return this._registerDefinition(definition);
-  /*
-  const definition = ModulerV3.Definition.create(options);
-  return ModulerV3.Registration.create(definition).commit();
-  //*/
 }

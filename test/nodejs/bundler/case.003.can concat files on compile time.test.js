@@ -1,5 +1,5 @@
 module.exports = async function ({ ModulerV3 }) {
-  const moduler = ModulerV3.create(__dirname + "/modules-2").globalize();
+  const moduler = ModulerV3.create(__dirname + "/modules-3").globalize();
   const bundle = await moduler.bundle({
     uses: [
       { file: "defs-1.js" },
@@ -9,11 +9,22 @@ module.exports = async function ({ ModulerV3 }) {
       { file: "defs-5.js" },
     ],
     factory(defs_1, defs_2, defs_3, defs_4, defs_5) {
-      return define({ module: { defs_1, defs_2, defs_3, defs_4, defs_5 }});
+      return define({
+        module: {
+          defs_1,
+          defs_2,
+          defs_3,
+          defs_4,
+          defs_5
+        }
+      });
     },
   });
   moduler.unglobalize();
-  console.log(bundle);
+  // console.log(bundle);
+  // console.log(bundle.moduler.definitions);
+  console.log(bundle.moduler.definitions);
+  moduler.assert(Object.keys(bundle.moduler.definitions).length === 5, "bundler no ha registrado los módulos en test de «concat files on compile time» (punto 1)");
   await bundle.write({
     outFile: "something.whatever"
   })

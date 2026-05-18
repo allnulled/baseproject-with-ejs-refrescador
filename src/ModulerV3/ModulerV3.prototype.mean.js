@@ -1,7 +1,9 @@
 (options) {
   this._trace("mean", arguments, 1);
-  const definition = await this.define(options);
-  return await this._loadDefinition(definition);
+  this.assert(typeof options === "object", "required «options» as object on ModulerV3.prototype.mean");
+  const definition = options instanceof ModulerV3.Definition ? options : await this.define(options);
+  const meaning = await this._loadDefinition(definition);
+  return meaning;
   Si_es_string:
   if (typeof options === "id") {
     Devolver_cacheado_si_escaece:

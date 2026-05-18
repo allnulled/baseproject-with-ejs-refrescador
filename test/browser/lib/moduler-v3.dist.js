@@ -24,6 +24,7 @@
             }
             constructor(extra = {}) {
                 Object.assign(this, extra);
+                this.$definitionStartedAt = new Date();
             }
         };
         static InjectionParser = class InjectionParser {
@@ -294,6 +295,7 @@
             this.basedir = basedir;
             this.definitions = {};
             this.settings = settings;
+            this.counter = 0;
         }
         _isTracing = false;
         _trace(method, args = [], debug = 0) {
@@ -312,6 +314,11 @@
         assert(condition, message) {
             if (!condition) throw new Error("assertion error on «ModuleV3»: " + message);
         };
+        addSettings(settings = {}) {
+            this._trace("addSettings", arguments, 2);
+            Object.assign(this.settings, settings);
+            return this;
+        };
         define(options) {
             this._trace("define", arguments, 2);
             const definition = new ModulerV3.Definition(options);
@@ -319,15 +326,13 @@
             this._validateType(definition);
             this._validateNontype(definition);
             return this._registerDefinition(definition);
-            /*
-            const definition = ModulerV3.Definition.create(options);
-            return ModulerV3.Registration.create(definition).commit();
-            //*/
         };
         async mean(options) {
             this._trace("mean", arguments, 1);
-            const definition = await this.define(options);
-            return await this._loadDefinition(definition);
+            this.assert(typeof options === "object", "required «options» as object on ModulerV3.prototype.mean");
+            const definition = options instanceof ModulerV3.Definition ? options : await this.define(options);
+            const meaning = await this._loadDefinition(definition);
+            return meaning;
             Si_es_string:
                 if (typeof options === "id") {
                     Devolver_cacheado_si_escaece: if (id in this.modules) {
@@ -359,8 +364,11 @@
         };
         async bundle(definition, options = {}) {
             this._trace("bundle", arguments, 2);
-            const entryDefinition = await this.mean(definition);
-            return ModulerV3.BundleWriter.create(this, entryDefinition, options);
+            const moduler = ModulerV3.create(this.basedir).addSettings({
+                saveSources: true
+            });
+            await moduler.mean(definition);
+            return ModulerV3.BundleWriter.create(moduler);
         };
         globalize() {
             this._trace("globalize");
@@ -376,18 +384,39 @@
             return this;
         };
         _tagType(definition) {
-            const possibleRequired = ["module", "factory", "url", "file", "path"];
+            const possibleRequired = ["module", "factory", "url", "file", "path", "name"];
             Classifying_type:
                 if (typeof definition.$type === "undefined") {
                     for (let index = 0; index < possibleRequired.length; index++) {
                         const requiredProp = possibleRequired[index];
                         if (requiredProp in definition) {
+                            this.assert(typeof definition.$type === "undefined", `ambiguous definition type due to «${definition.$type}» and «${requiredProp}=${definition[requiredProp]}»`);
                             definition.$type = requiredProp;
-                            break Classifying_type;
                         }
                     }
                 }
             this.assert(typeof definition.$type === "string", `property required in definition: ${possibleRequired.map(p => "«" + p + "»").join(" or ")}`);
+        };
+        _tagOrder(definition) {
+            definition.$order = this.counter++;
+        };
+        _tagSource(definition, source) {
+            if (this.settings.saveSources === true) {
+                definition.$source = source;
+            }
+            this._tagDefinitionEndedAt(definition);
+        };
+        _tagMeaningStartedAt(definition) {
+            // definition.$meaningStartedAt = new Date();
+        };
+        _tagMeaningEndedAt(definition) {
+            // definition.$meaningEndedAt = new Date();
+        };
+        _tagDefinitionStartedAt(definition) {
+            // definition.$definitionStartedAt = new Date();
+        };
+        _tagDefinitionEndedAt(definition) {
+            // definition.$definitionEndedAt = new Date();
         };
         _validateType(definition) {
             if (definition.$type === "module") {
@@ -400,6 +429,8 @@
                 this.assert(typeof definition.file === "string", `required «file» as string when type is «file»`);
             } else if (definition.$type === "path") {
                 this.assert(typeof definition.path === "string", `required «path» as string when type is «path»`);
+            } else if (definition.$type === "name") {
+                this.assert(typeof definition.name === "string", `required «name» as string when type is «name»`);
             } else {
                 throw new Error(`type «${definition.$type}» was not identified`);
             }
@@ -436,6 +467,10 @@
             return definition;
         };
         async _loadDefinition(definition) {
+            if (typeof definition.name === "string") {
+
+            }
+            this._tagMeaningStartedAt(definition);
             let dependencies = [];
             if (definition.uses && definition.uses.length) {
                 for (let indexDependency = 0; indexDependency < definition.uses.length; indexDependency++) {
@@ -445,30 +480,52 @@
                 }
             }
             const value = definition[definition.$type];
+            let source = undefined;
             let output = undefined;
             if (definition.$type === "module") {
                 output = value;
             } else if (definition.$type === "factory") {
-                return await this._evaluateFactory(value, dependencies, definition);
+                output = await this._evaluateFactory(value, dependencies, definition);
             } else if (definition.$type === "file") {
                 const fullpath = this.fullpath(value);
-                const source = await this._readFile(fullpath);
+                source = await this._readFile(fullpath);
                 output = await this._evaluateSource(source);
             } else if (definition.$type === "url") {
                 const fullpath = this.fullpath(value);
-                const source = await this._readUrl(fullpath);
+                source = await this._readUrl(fullpath);
                 output = await this._evaluateSource(source);
             } else if (definition.$type === "path") {
                 const fullpath = this.fullpath(value);
                 // @OJO: aquí habrá que mirar el settings.pathMode
                 if (typeof require !== "undefined") {
-                    const source = await this._readFile(fullpath);
+                    source = await this._readFile(fullpath);
                     output = await this._evaluateSource(source);
                 } else {
-                    const source = await this._readUrl(fullpath);
+                    source = await this._readUrl(fullpath);
                     output = await this._evaluateSource(source);
                 }
+            } else if (definition.$type === "name") {
+                const realName = `name://${definition.name}`;
+                this.assert(realName in this.definitions, `no module defined as «${definition.name}»`);
+                output = this.definitions[realName]
+                source = output.$source || undefined;
+            } else {
+                throw new Error("Type not detected by _loadDefinition");
             }
+            this._tagOrder(definition);
+            this._tagSource(definition, source);
+            this._tagMeaningEndedAt(definition);
+            // @DANGEROUSEMAXIMUTS:
+            // @DANGEROUSEMAXIMUTS:
+            // @DANGEROUSEMAXIMUTS:
+            // @DANGEROUSEMAXIMUTS:
+            if (output instanceof ModulerV3.Definition) {
+                output = await this.mean(output);
+            }
+            // @DANGEROUSEMAXIMUTS:
+            // @DANGEROUSEMAXIMUTS:
+            // @DANGEROUSEMAXIMUTS:
+            // @DANGEROUSEMAXIMUTS:
             return output;
         };
         _evaluateFactory(callback, dependencies, definition) {
@@ -484,14 +541,34 @@
             js += `}`;
             return js;
         };
-        async _evaluateSource(original, args = {}) {
-            const source = await this._injectSource(original);
-            const keys = Object.keys(args);
-            const values = Object.values(args);
-            const safeSource = this._wrapInTryCatch(source);
-            const asyncCallback = new((async function() {}).constructor)(...keys, safeSource);
-            // console.log(source);
-            return await asyncCallback(...values);
+        _wrapInAsyncCall(code) {
+            let js = "";
+            js += `(async function() {\n`;
+            js += `  ${code}`;
+            js += `\n})()`;
+            return js;
+        };
+        __interprint(arg) {
+            console.log(arg);
+            return arg;
+        };
+        _destructureObjectToJs(obj, id) {
+            let js = "";
+            for (let prop in obj) {
+                js += `const ${prop} = ${id}.${prop};\n`;
+            }
+            return js;
+        };
+        async _evaluateSource($_EVALUATION_ORIGINAL_SOURCE, $_EVALUATION_CALLBACK_ARGUMENTS = {}, $_MAKE_AS_ASYNC_FUNCTION = false) {
+            const $_EVALUATION_PRODUCED_SOURCE = await this._injectSource($_EVALUATION_ORIGINAL_SOURCE);
+            const $_EVALUATION_CALLBACK_ARGUMENT_KEYS = Object.keys($_EVALUATION_CALLBACK_ARGUMENTS);
+            const $_EVALUATION_SAFE_SOURCE = this._wrapInTryCatch($_EVALUATION_PRODUCED_SOURCE);
+            if ($_MAKE_AS_ASYNC_FUNCTION) {
+                const $_EVALUATION_ASYNC_CALLBACK = new((async function() {}).constructor)(...$_EVALUATION_CALLBACK_ARGUMENT_KEYS, $_EVALUATION_SAFE_SOURCE);
+                return $_EVALUATION_ASYNC_CALLBACK(...Object.values($_EVALUATION_CALLBACK_ARGUMENTS));
+            } else {
+                return eval(this._wrapInAsyncCall(this._destructureObjectToJs($_EVALUATION_CALLBACK_ARGUMENTS, "$_EVALUATION_CALLBACK_ARGUMENTS") + $_EVALUATION_SAFE_SOURCE));
+            }
         };
         async _injectSource(original) {
             const injections = ModulerV3.InjectionParser.create(original).parse();

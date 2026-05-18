@@ -9,6 +9,8 @@
     this.assert(typeof definition.file === "string", `required «file» as string when type is «file»`);
   } else if (definition.$type === "path") {
     this.assert(typeof definition.path === "string", `required «path» as string when type is «path»`);
+  } else if (definition.$type === "name") {
+    this.assert(typeof definition.name === "string", `required «name» as string when type is «name»`);
   } else {
     throw new Error(`type «${definition.$type}» was not identified`);
   }
